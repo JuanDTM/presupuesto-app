@@ -1,5 +1,7 @@
+// ComponenteEjesNodos.js
 import React, { useRef, useEffect, useState } from "react";
-import { Stage, Layer, Line, Rect, Text } from "react-konva";
+import LienzoEjesNodos from "./LienzoEjesNodos";
+import PanelCotas from "./PanelCotas";
 
 const niveles = [
   { value: "1 de 1", ancho: 12, alto: 20 },
@@ -10,39 +12,6 @@ const niveles = [
   { value: "3 de 3", ancho: 20, alto: 20 },
 ];
 
-function Cota({ x1, y1, x2, y2, valor, offset = 30 }) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.sqrt(dx * dx + dy * dy);
-  if (len === 0) return null;
-  const nx = -dy / len;
-  const ny = dx / len;
-  const px1 = x1 + nx * offset;
-  const py1 = y1 + ny * offset;
-  const px2 = x2 + nx * offset;
-  const py2 = y2 + ny * offset;
-  const mx = (px1 + px2) / 2;
-  const my = (py1 + py2) / 2;
-
-  return (
-    <>
-      <Line points={[px1, py1, px2, py2]} stroke="#e53935" strokeWidth={2} dash={[6, 4]} />
-      <Line points={[x1, y1, px1, py1]} stroke="#e53935" strokeWidth={1} />
-      <Line points={[x2, y2, px2, py2]} stroke="#e53935" strokeWidth={1} />
-      <Text
-        x={mx - 30}
-        y={my - 12}
-        width={60}
-        align="center"
-        text={valor + " cm"}
-        fontSize={16}
-        fill="#e53935"
-        fontStyle="bold"
-      />
-    </>
-  );
-}
-
 export default function ComponenteEjesNodos() {
   // Estados principales
   const [ancho, setAncho] = useState(200); // en cm
@@ -50,37 +19,31 @@ export default function ComponenteEjesNodos() {
   const [nivel, setNivel] = useState(niveles[0].value);
   const [ejesSecundarios, setEjesSecundarios] = useState([]);
   const [orientacionesNodos, setOrientacionesNodos] = useState({});
+  const [cotas, setCotas] = useState([]);
 
-  // Zoom
+  // Zoom y pan
   const [stageScale, setStageScale] = useState(1);
+  const [stageX, setStageX] = useState(0);
+  const [stageY, setStageY] = useState(0);
 
   // Pan con mouse y barra espaciadora
   const [isPanning, setIsPanning] = useState(false);
   const [spacePressed, setSpacePressed] = useState(false);
   const panStart = useRef({ x: 0, y: 0 });
-  const scrollStart = useRef({ left: 0, top: 0 });
+  const stageStart = useRef({ x: 0, y: 0 });
 
+  // --- VARIABLES DE DIBUJO Y MÁRGENES (ORDEN CORRECTO) ---
   const escala = 2;
-  const minWidth = 900;
-  const minHeight = 600;
-  const margen = 50; // margen alrededor del diseño
-
-  // El canvas se ajusta al tamaño del diseño + margen
+  const margen = 50;
   const canvasWidth = margen + ancho * escala + margen;
   const canvasHeight = margen + alto * escala + margen;
+  const extraMargin = Math.max(500, Math.max(canvasWidth, canvasHeight) * 0.5);
+  const stageWidth = canvasWidth + extraMargin * 2;
+  const stageHeight = canvasHeight + extraMargin * 2;
+  const offsetX = extraMargin;
+  const offsetY = extraMargin;
 
-  const containerRef = useRef();
-  const stageRef = useRef();
-
-  // Centrar el scroll al cargar o cambiar tamaño/zoom
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = (canvasWidth * stageScale - minWidth) / 2;
-      containerRef.current.scrollTop = (canvasHeight * stageScale - minHeight) / 2;
-    }
-  }, [canvasWidth, canvasHeight, stageScale]);
-
-  // Ejes principales (ajustados al margen)
+  // Ejes principales y secundarios
   const eje0 = { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen };
   const eje1 = { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + alto * escala };
   const eje2 = { x1: margen + ancho * escala, y1: margen + alto * escala, x2: margen, y2: margen + alto * escala };
@@ -96,6 +59,8 @@ export default function ComponenteEjesNodos() {
     { x: eje2.x1, y: eje2.y1 },
     { x: eje3.x1, y: eje3.y1 },
   ];
+ 
+  // Agregar ejes secundarios
   ejesV.forEach((ev) => {
     const x = eje0.x1 + ev.distancia * escala;
     nodos.push({ x, y: eje0.y1 });
@@ -143,9 +108,17 @@ export default function ComponenteEjesNodos() {
     e.evt.preventDefault();
     const scaleBy = 1.1;
     const oldScale = stageScale;
+    const pointer = e.target.getStage().getPointerPosition();
+    const mousePointTo = {
+      x: (pointer.x - stageX) / oldScale,
+      y: (pointer.y - stageY) / oldScale,
+    };
     let newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
-    newScale = Math.max(0.05, Math.min(10, newScale)); // Zoom muy amplio
+    newScale = Math.max(0.05, Math.min(10, newScale));
+    // Nuevo stageX y stageY para centrar el zoom en el mouse
     setStageScale(newScale);
+    setStageX(pointer.x - mousePointTo.x * newScale);
+    setStageY(pointer.y - mousePointTo.y * newScale);
   };
 
   // Botones de zoom
@@ -153,21 +126,22 @@ export default function ComponenteEjesNodos() {
     const scaleBy = 1.1;
     let newScale = Math.min(stageScale * scaleBy, 10);
     setStageScale(newScale);
+    setStageX((900 - stageWidth * newScale) / 2 + offsetX * newScale);
+    setStageY((600 - stageHeight * newScale) / 2 + offsetY * newScale);
   };
 
   const zoomOut = () => {
     const scaleBy = 1.1;
     let newScale = Math.max(stageScale / scaleBy, 0.05);
     setStageScale(newScale);
+    setStageX((900 - stageWidth * newScale) / 2 + offsetX * newScale);
+    setStageY((600 - stageHeight * newScale) / 2 + offsetY * newScale);
   };
 
-  // Resetear zoom y centrar
-  const resetZoom = () => {
-    setStageScale(1);
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = (canvasWidth - minWidth) / 2;
-      containerRef.current.scrollTop = (canvasHeight - minHeight) / 2;
-    }
+  // Botón de centrar vista
+  const centrarVista = () => {
+    setStageX((900 - stageWidth * stageScale) / 2 + offsetX * stageScale);
+    setStageY((600 - stageHeight * stageScale) / 2 + offsetY * stageScale);
   };
 
   // --- PAN CON CLIC Y BARRA ESPACIADORA ---
@@ -175,22 +149,15 @@ export default function ComponenteEjesNodos() {
     if (!spacePressed) return;
     setIsPanning(true);
     panStart.current = { x: e.clientX, y: e.clientY };
-    if (containerRef.current) {
-      scrollStart.current = {
-        left: containerRef.current.scrollLeft,
-        top: containerRef.current.scrollTop,
-      };
-    }
+    stageStart.current = { x: stageX, y: stageY };
   };
 
   const handleMouseMove = (e) => {
     if (!isPanning) return;
-    if (containerRef.current) {
-      const dx = e.clientX - panStart.current.x;
-      const dy = e.clientY - panStart.current.y;
-      containerRef.current.scrollLeft = scrollStart.current.left - dx;
-      containerRef.current.scrollTop = scrollStart.current.top - dy;
-    }
+    const dx = e.clientX - panStart.current.x;
+    const dy = e.clientY - panStart.current.y;
+    setStageX(stageStart.current.x + dx);
+    setStageY(stageStart.current.y + dy);
   };
 
   const handleMouseUp = () => {
@@ -225,8 +192,13 @@ export default function ComponenteEjesNodos() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-    // eslint-disable-next-line
   }, [isPanning]);
+
+  // Centrar vista al cargar o cambiar tamaño/zoom
+  useEffect(() => {
+    centrarVista();
+    // eslint-disable-next-line
+  }, [canvasWidth, canvasHeight, stageScale]);
 
   return (
     <div
@@ -299,154 +271,50 @@ export default function ComponenteEjesNodos() {
         </button>
         <button onClick={zoomIn}>Zoom +</button>
         <button onClick={zoomOut}>Zoom -</button>
-        <button onClick={resetZoom}>Resetear zoom</button>
+        <button onClick={centrarVista}>Centrar vista</button>
         <span style={{ color: "#888" }}>
           <b>Zoom:</b> rueda del mouse &nbsp;|&nbsp; <b>Pan:</b> barra espaciadora + clic
         </span>
       </div>
 
-      {/* Lienzo centrado y scrollable */}
-      <div
-        ref={containerRef}
-        style={{
-          width: minWidth,
-          height: minHeight,
-          overflow: "auto",
-          border: "1px solid #aaa",
-          background: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          marginBottom: 16,
-          position: "relative",
-          cursor: spacePressed ? (isPanning ? "grabbing" : "grab") : "default"
-        }}
-        onMouseDown={handleMouseDown}
-      >
-        <div
-          style={{
-            width: canvasWidth * stageScale,
-            height: canvasHeight * stageScale,
-            position: "relative"
-          }}
-        >
-          <Stage
-            ref={stageRef}
-            width={canvasWidth}
-            height={canvasHeight}
-            scaleX={stageScale}
-            scaleY={stageScale}
-            onWheel={handleWheel}
-            style={{ background: "#fff", position: "absolute", left: 0, top: 0 }}
-          >
-            <Layer>
-              {/* Borde del área útil */}
-              <Rect
-                x={margen}
-                y={margen}
-                width={ancho * escala}
-                height={alto * escala}
-                stroke="#000"
-                strokeWidth={2}
-                dash={[6, 4]}
-                listening={false}
-              />
-              {/* Ejes principales */}
-              {[eje0, eje1, eje2, eje3].map((eje, i) => (
-                <Line
-                  key={`ejeP-${i}`}
-                  points={[eje.x1, eje.y1, eje.x2, eje.y2]}
-                  stroke="#1976d2"
-                  strokeWidth={4}
-                />
-              ))}
-              {/* Ejes secundarios */}
-              {ejesV.map((ev, i) => {
-                const x = eje0.x1 + ev.distancia * escala;
-                return (
-                  <Line
-                    key={`ejeV-${i}`}
-                    points={[x, eje0.y1, x, eje2.y1]}
-                    stroke="#43a047"
-                    strokeWidth={2}
-                    dash={[8, 8]}
-                  />
-                );
-              })}
-              {ejesH.map((eh, i) => {
-                const y = eje0.y1 + eh.distancia * escala;
-                return (
-                  <Line
-                    key={`ejeH-${i}`}
-                    points={[eje0.x1, y, eje1.x1, y]}
-                    stroke="#fbc02d"
-                    strokeWidth={2}
-                    dash={[8, 8]}
-                  />
-                );
-              })}
-              {/* Nodos */}
-              {nodos.map((n, idx) => {
-                let w = 20, h = 12;
-                if (nivel !== "1 de 1") {
-                  const nivelObj = niveles.find(nv => nv.value === nivel);
-                  w = nivelObj.ancho;
-                  h = nivelObj.alto;
-                } else {
-                  const orient = orientacionesNodos[idx] || "horizontal";
-                  w = orient === "horizontal" ? 20 : 12;
-                  h = orient === "horizontal" ? 12 : 20;
-                }
-                w = Math.min(w, ancho);
-                h = Math.min(h, alto);
+      {/* Lienzo */}
+      <LienzoEjesNodos
+        ancho={ancho}
+        alto={alto}
+        nivel={nivel}
+        niveles={niveles}
+        ejesSecundarios={ejesSecundarios}
+        orientacionesNodos={orientacionesNodos}
+        escala={escala}
+        margen={margen}
+        canvasWidth={canvasWidth}
+        canvasHeight={canvasHeight}
+        stageScale={stageScale}
+        stageX={stageX}
+        stageY={stageY}
+        handleWheel={handleWheel}
+        handleMouseDown={handleMouseDown}
+        spacePressed={spacePressed}
+        isPanning={isPanning}
+        nodos={nodos}
+        cotas={cotas}
+      />
 
-                let rectX = n.x - (w * escala) / 2;
-                let rectY = n.y - (h * escala) / 2;
-                rectX = Math.max(eje0.x1, Math.min(rectX, eje1.x1 - w * escala));
-                rectY = Math.max(eje0.y1, Math.min(rectY, eje2.y1 - h * escala));
-                return (
-                  <React.Fragment key={`nodo-${idx}`}>
-                    <Rect
-                      x={rectX}
-                      y={rectY}
-                      width={w * escala}
-                      height={h * escala}
-                      fill="rgba(30,144,255,0.2)"
-                      stroke="#1976d2"
-                      strokeWidth={2}
-                    />
-                    <Text
-                      x={rectX + 5}
-                      y={rectY + 5}
-                      text={`N${idx + 1}`}
-                      fontSize={14}
-                      fill="#1976d2"
-                    />
-                  </React.Fragment>
-                );
-              })}
-              {/* Cotas horizontales (arriba y abajo) */}
-              <Cota
-                x1={eje0.x1}
-                y1={eje0.y1}
-                x2={eje0.x2}
-                y2={eje0.y2}
-                valor={ancho}
-                offset={-20}
-              />
-              
-              {/* Cotas verticales (izquierda y derecha) */}
-              <Cota
-                x1={eje3.x1}
-                y1={eje3.y1}
-                x2={eje3.x2}
-                y2={eje3.y2}
-                valor={alto}
-                offset={-20}
-              />
-              
-            </Layer>
-          </Stage>
-        </div>
-      </div>
+      {/* Panel de cotas */}
+      <PanelCotas
+        nodos={nodos}
+        cotas={cotas}
+        setCotas={setCotas}
+        escala={escala}
+        orientacionesNodos={orientacionesNodos}
+        nivel={nivel}
+        niveles={niveles}
+        margen={margen}
+        ancho={ancho}
+        alto={alto}
+        ejesV={ejesV}
+        ejesH={ejesH}
+      />
 
       {/* Selector de orientación de nodos SOLO para 1 de 1 */}
       {nivel === "1 de 1" && (
@@ -470,7 +338,7 @@ export default function ComponenteEjesNodos() {
       )}
 
       {/* Lista de ejes secundarios */}
-      <div style={{ width: minWidth, marginBottom: 16 }}>
+      <div style={{ width: 900, marginBottom: 16 }}>
         <b>Ejes secundarios:</b>
         <ul>
           {ejesSecundarios.map((e, i) => (
