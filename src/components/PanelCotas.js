@@ -15,7 +15,7 @@ import React, { useState } from "react";
  * - niveles: array de niveles [{value, ancho, alto}]
  * - margen: margen del canvas
  * - ancho: ancho del área útil (en cm)
- * - alto: alto del área útil (en cm)
+ * - largo: largo del área útil (en cm)
  * - ejesV: array de ejes secundarios verticales [{distancia}]
  * - ejesH: array de ejes secundarios horizontales [{distancia}]
  */
@@ -36,7 +36,7 @@ export default function PanelCotas({
     ],
     margen,
     ancho,
-    alto,
+    largo,
     ejesV,
     ejesH
   }) {
@@ -46,9 +46,9 @@ export default function PanelCotas({
   // Definir los ejes principales
   const ejesPrincipales = {
     superior: { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen },
-    inferior: { x1: margen, y1: margen + alto * escala, x2: margen + ancho * escala, y2: margen + alto * escala },
-    izquierdo: { x1: margen, y1: margen, x2: margen, y2: margen + alto * escala },
-    derecho: { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + alto * escala },
+    inferior: { x1: margen, y1: margen + largo * escala, x2: margen + ancho * escala, y2: margen + largo * escala },
+    izquierdo: { x1: margen, y1: margen, x2: margen, y2: margen + largo * escala },
+    derecho: { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + largo * escala },
   };
 
   // Calcular los nodos iniciales (esquinas)
@@ -82,7 +82,7 @@ export default function PanelCotas({
   function calcularCota(
     nodoA, nodoB, idxA, idxB,
     orientacionesNodos, nivel, niveles,
-    tipoCota, margen, escala, ancho, alto, ejesV, ejesH
+    tipoCota, margen, escala, ancho, largo, ejesV, ejesH
   ) {
     // 1. Dimensiones de los nodos según orientación y nivel
     
@@ -101,7 +101,7 @@ export default function PanelCotas({
     const distancia = (esHorizontal ? dx : dy) / escala;
   
     const comparteEjeOriginal = (nodo) => {
-      const enEjeX = Math.abs(nodo.y - margen) < tol || Math.abs(nodo.y - (margen + alto * escala)) < tol;
+      const enEjeX = Math.abs(nodo.y - margen) < tol || Math.abs(nodo.y - (margen + largo * escala)) < tol;
       const enEjeY = Math.abs(nodo.x - margen) < tol || Math.abs(nodo.x - (margen + ancho * escala)) < tol;
     
       return { enEjeX, enEjeY }; // Retorna un objeto indicando si está en el eje X o Y
@@ -165,7 +165,7 @@ export default function PanelCotas({
     const valor = calcularCota(
         nodos[nodoA], nodos[nodoB], nodoA, nodoB,
         orientacionesNodos, nivel, niveles,
-        tipoCota, margen, escala, ancho, alto, ejesV, ejesH
+        tipoCota, margen, escala, ancho, largo, ejesV, ejesH
       );
     setCotas([...cotas, { nodoA, nodoB, tipo: tipoCota, valor }]);  // Agrega la nueva cota al estado
   }
@@ -220,3 +220,4 @@ export default function PanelCotas({
     </div>
   );
 }
+// export { calcularCota };

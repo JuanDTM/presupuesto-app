@@ -2,10 +2,11 @@
 import React from "react";
 import { Stage, Layer, Line, Rect, Text } from "react-konva";
 import Cota from "./Cota";
+import MuroEntero from "./MuroEntero";
 
 export default function LienzoEjesNodos({
   ancho,
-  alto,
+  largo,
   nivel,
   niveles,
   ejesSecundarios,
@@ -22,7 +23,8 @@ export default function LienzoEjesNodos({
   spacePressed,
   isPanning,
   nodos,
-  cotas
+  cotas,
+  muros
 }) {
   // --- margen extra y offset para que todo se vea siempre ---
     const extraMargin = Math.max(500, Math.max(canvasWidth, canvasHeight) * 0.5);
@@ -33,9 +35,9 @@ export default function LienzoEjesNodos({
 
   // Ejes principales (ajustados al margen y offset)
   const eje0 = { x1: margen + offsetX, y1: margen + offsetY, x2: margen + ancho * escala + offsetX, y2: margen + offsetY };
-  const eje1 = { x1: margen + ancho * escala + offsetX, y1: margen + offsetY, x2: margen + ancho * escala + offsetX, y2: margen + alto * escala + offsetY };
-  const eje2 = { x1: margen + ancho * escala + offsetX, y1: margen + alto * escala + offsetY, x2: margen + offsetX, y2: margen + alto * escala + offsetY };
-  const eje3 = { x1: margen + offsetX, y1: margen + alto * escala + offsetY, x2: margen + offsetX, y2: margen + offsetY };
+  const eje1 = { x1: margen + ancho * escala + offsetX, y1: margen + offsetY, x2: margen + ancho * escala + offsetX, y2: margen + largo * escala + offsetY };
+  const eje2 = { x1: margen + ancho * escala + offsetX, y1: margen + largo * escala + offsetY, x2: margen + offsetX, y2: margen + largo * escala + offsetY };
+  const eje3 = { x1: margen + offsetX, y1: margen + largo * escala + offsetY, x2: margen + offsetX, y2: margen + offsetY };
 
   const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");
   const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");
@@ -79,7 +81,7 @@ export default function LienzoEjesNodos({
             x={margen + offsetX}
             y={margen + offsetY}
             width={ancho * escala}
-            height={alto * escala}
+            height={largo * escala}
             stroke="#000"
             strokeWidth={2}
             dash={[6, 4]}
@@ -132,7 +134,7 @@ export default function LienzoEjesNodos({
               h = orient === "horizontal" ? 12 : 20;
             }
             w = Math.min(w, ancho);
-            h = Math.min(h, alto);
+            h = Math.min(h, largo);
 
             let rectX = n.x - (w * escala) / 2;
             let rectY = n.y - (h * escala) / 2;
@@ -175,7 +177,7 @@ export default function LienzoEjesNodos({
             y1={eje3.y1}
             x2={eje3.x2}
             y2={eje3.y2}
-            valor={alto}
+            valor={largo}
             offset={-20}
             color="#F57C00"
           />
@@ -192,6 +194,18 @@ export default function LienzoEjesNodos({
               color={c.tipo === "libre" ? "#e53935" : "#1976d2"}
             />
           ))}
+          {/* Muros */} 
+          {muros && muros.map((muro, idx) => (
+            <MuroEntero
+              key={idx}
+              x1={muro.x1 + offsetX}
+              y1={muro.y1 + offsetY}
+              x2={muro.x2 + offsetX}
+              y2={muro.y2 + offsetY}
+              seleccionado={false}
+            />
+          ))}
+                                                             
         </Layer>
       </Stage>
     </div>
