@@ -261,6 +261,17 @@ export default function ComponenteEjesNodos() {
           />
         </label>
         <label>
+          Alto (cm):{" "}
+          <input
+            type="number"
+            value={altura}
+            min={100}
+            max={350}
+            onChange={e => setAltura(Number(e.target.value))}
+            style={{ width: 80 }}
+          />
+        </label>
+        <label>
           Nivel:{" "}
           <select value={nivel} onChange={e => { setNivel(e.target.value); setOrientacionesNodos({}); }}>     { /* Selector de nivel, al cambiar se resetea la orientación de nodos */ }
             {niveles.map(n => (
@@ -270,6 +281,13 @@ export default function ComponenteEjesNodos() {
             ))}
           </select>
         </label>
+        <button onClick={zoomIn}>Zoom +</button>
+        <button onClick={zoomOut}>Zoom -</button>
+        <button onClick={centrarVista}>Centrar vista</button>
+        
+      </div>
+
+      <div style={{ display: "flex", gap: 24, marginBottom: 16, flexWrap: "wrap" }}>
         <label>
           Eje secundario:{" "}
           <select value={orientacion} onChange={e => setOrientacion(e.target.value)}>
@@ -292,9 +310,6 @@ export default function ComponenteEjesNodos() {
         <button onClick={deshacerEje} disabled={ejesSecundarios.length === 0}>
           Deshacer último eje
         </button>
-        <button onClick={zoomIn}>Zoom +</button>
-        <button onClick={zoomOut}>Zoom -</button>
-        <button onClick={centrarVista}>Centrar vista</button>
         <span style={{ color: "#888" }}>
           <b>Zoom:</b> rueda del mouse &nbsp;|&nbsp; <b>Pan:</b> barra espaciadora + clic
         </span>
@@ -354,6 +369,7 @@ export default function ComponenteEjesNodos() {
         largo={largo}
         ejesV={ejesV}
         ejesH={ejesH}
+        altura={altura}
       />
       {/* Selector de orientación de nodos SOLO para 1 de 1 */}
       {nivel === "1 de 1" && (

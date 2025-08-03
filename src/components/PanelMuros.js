@@ -1,10 +1,11 @@
 // PanelMuros.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import MuroVentanaEditor from "./MuroVentanaEditor"; // tu editor modal
 
 //tipo de muros
 const tiposMuros = [
   { value: "entero", label: "Muro entero" },
-  { value: "ventanodoa", label: "Muro ventanodoa" },
+  { value: "ventana", label: "Muro ventana" },
   { value: "puerta", label: "Muro puerta" },
   { value: "puertaventanodoa", label: "Muro puertaventanodoa" },
 ];
@@ -28,8 +29,47 @@ export default function PanelMuros({
   ancho,
   largo,
   ejesV,
-  ejesH
+  ejesH,
+  altura,
 }) {
+
+    // Estados para las variables relacionadas con la interacción del lienzo
+    const [spacePressed, setSpacePressed] = useState(false); // Indica si la tecla de espacio está presionada
+    const [isPanning, setIsPanning] = useState(false); // Indica si el usuario está desplazando el lienzo
+    const [stageScale, setStageScale] = useState(1); // Nivel de zoom inicial
+  
+    // Monitorear cambios en el estado `muros`
+    useEffect(() => {
+      console.log("Muros actualizados:", muros);
+      muros.forEach((muro, index) => {
+        console.log(`Muro ${index}:`, muro);
+      });
+    }, [muros]);
+
+    // Función para manejar el evento de rueda del ratón
+    const handleWheel = (event) => {
+      event.preventDefault(); // Evita el comportamiento predeterminado del scroll
+      const scaleBy = 1.05; // Factor de escala
+      const oldScale = stageScale;
+      const pointer = event.target.getPointerPosition();
+      const mousePointTo = {
+        x: pointer.x / oldScale - event.target.x() / oldScale,
+        y: pointer.y / oldScale - event.target.y() / oldScale,
+      };
+  
+      // Ajustar la escala
+      const newScale = event.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+      setStageScale(newScale);
+  
+      // Ajustar la posición del lienzo
+      event.target.scale({ x: newScale, y: newScale });
+      const newPos = {
+        x: -(mousePointTo.x - pointer.x / newScale) * newScale,
+        y: -(mousePointTo.y - pointer.y / newScale) * newScale,
+      };
+      event.target.position(newPos);
+    };
+
   const [tipoMuro, setTipoMuro] = useState("entero");
   const [nodoA, setNodoA] = useState(0);
   const [nodoB, setNodoB] = useState(1);
@@ -50,6 +90,9 @@ export default function PanelMuros({
     { x: ejesPrincipales.izquierdo.x1, y: ejesPrincipales.inferior.y1 }, // Nodo inferior izquierdo
     { x: ejesPrincipales.derecho.x1, y: ejesPrincipales.inferior.y1 },  // Nodo inferior derecho
   ];
+
+  const [mostrarEditorVentana, setMostrarEditorVentana] = useState(false);
+  const [datosPrevios, setDatosPrevios] = useState(null);
 
    // Devuelve dimensiones del nodo según nivel y orientación
    function getDimensionesNodo(nodoN) {
@@ -72,7 +115,7 @@ export default function PanelMuros({
   }
 
   // Calcula los puntos de inicio y fin del muro ajustados a los bordes de los nodos
-  function calcularPuntosMuro(nodoA, nodoB, nodoClaveA, nodoClaveB) {
+  function calcularPuntosMuro(nodoA, nodoB, nodoClaveA, nodoClaveB, desplazamiento = 0) {
     // 1. Dimensiones de los nodos
     const dimsA = getDimensionesNodo(nodoClaveA); // dimensiones del nodo A
     const dimsB = getDimensionesNodo(nodoClaveB); // dimensiones del nodo B
@@ -223,25 +266,89 @@ export default function PanelMuros({
 
   // Saber si ambos nodos están sobre ejes principales
   function esSobreEjePrincipal(nodoA, nodoB) {
-    const tol = 1; // tolerancia para considerar que un nodo está sobre un eje
-    console.log("nodoAx", nodos[nodoA].x, "nodoAy", nodos[nodoA].y, "margen", margen, "ancho", ancho, "largo", largo, "escala", escala);
-    const esPrincipal = nodo => {
-      const cercaMargenIzquierdo = Math.abs(nodo.x - margen) <= tol;
-      const cercaMargenDerecho = Math.abs(nodo.x - (margen + ancho * escala)) <= tol;
-      const cercaMargenSuperior = Math.abs(nodo.y - margen) <= tol;
-      const cercaMargenInferior = Math.abs(nodo.y - (margen + largo * escala)) <= tol;
-    
-      console.log("Cerca del margen izquierdo:", cercaMargenIzquierdo);
-      console.log("Cerca del margen derecho:", cercaMargenDerecho);
-      console.log("Cerca del margen superior:", cercaMargenSuperior);
-      console.log("Cerca del margen inferior:", cercaMargenInferior);
-    
-      return (
-        (cercaMargenIzquierdo || cercaMargenDerecho) &&
-        (cercaMargenSuperior || cercaMargenInferior)
-      );
-    };
-    return esPrincipal(nodos[nodoA]) && esPrincipal(nodos[nodoB]);
+    const PerimetroA=comparteEjeOriginal(nodos[nodoA]);
+    const PerimetroB=comparteEjeOriginal(nodos[nodoB]);
+    //si las dos x de los nodes es verdadera, esta bobre eje principal
+    if (PerimetroA.enEjeX && PerimetroB.enEjeX ) {
+      return true; // Ambos nodos están sobre el eje X principal
+    }else if (PerimetroA.enEjeY && PerimetroB.enEjeY) {
+      return true; // Ambos nodos están sobre el eje Y principal
+    }else{
+      return false; // Al menos uno de los nodos no está sobre un eje principal
+    }
+  }
+
+  // --- NUEVO: Manejo del submit del formulario ---
+  function onSubmitAgregarMuro(e) {
+    e.preventDefault();
+    console.log("Tipo de muro:", tipoMuro);
+
+    if (nodoA === nodoB) return;
+
+    const cotaLibre = calcularCotaLibre(
+      nodos[nodoA], nodos[nodoB], nodoA, nodoB
+    );
+    console.log("Cota libre:", cotaLibre);
+    if (cotaLibre <= 0) {
+      alert("La distancia libre entre los nodos debe ser mayor a 0 cm.");
+      return;
+    }
+  
+    const desplaz = esSobreEjePrincipal(nodoA, nodoB) ? 0 : desplazamiento;
+    console.log("Desplazamiento:", desplaz);
+
+    // Calcula los puntos ajustados del muro
+    const { x1, y1, x2, y2 } = calcularPuntosMuro(
+      nodos[nodoA],
+      nodos[nodoB],
+      nodoA,
+      nodoB,
+      desplaz
+    );
+
+    if (tipoMuro === "entero"){
+       // Si es muro normal, sigue igual:
+      setMuros([
+        ...muros,
+        {
+          tipo: tipoMuro,
+          nodoA,
+          nodoB,
+          desplazamiento: desplaz,
+          cotaLibre,
+          x1, y1, x2, y2 // puntos listos para dibujar
+        },
+      ]);
+    }else if (tipoMuro === "ventana") {
+      // Abre el editor especial para muro ventana
+      setDatosPrevios({
+        nodoA,
+        nodoB,
+        desplazamiento: desplaz,
+        escala,
+        margen,
+        cotaLibre,
+        altura,
+        x1, y1, x2, y2 // puntos listos para dibujar
+      });
+      setMostrarEditorVentana(true);
+      return;
+    }
+   
+  }
+
+  // --- NUEVO: Guardar muro ventana desde el editor ---
+  function handleGuardarMuroVentana(datosMuroVentana) {
+    console.log("Datos recibidos en PanelMuros:", datosMuroVentana);
+  
+    setMuros((prevMuros) => {
+      const nuevosMuros = [...prevMuros, datosMuroVentana];
+      console.log("Estado actualizado de muros:", nuevosMuros);
+      return nuevosMuros;
+    });
+  
+    setMostrarEditorVentana(false);
+    setDatosPrevios(null);
   }
 
   function agregarMuro() {
@@ -264,8 +371,8 @@ export default function PanelMuros({
       nodos[nodoA],
       nodos[nodoB],
       nodoA,
-      nodoB
-     // desplaz
+      nodoB,
+      desplaz
     );
 
     setMuros([
@@ -285,16 +392,11 @@ export default function PanelMuros({
     setMuros(muros.filter((_, i) => i !== nodoClave));
   }
 
-  const mostrarDesplazamiento = !esSobreEjePrincipal(nodoA, nodoB);
-
   return (
     <div style={{ marginodoBottom: 16, width: "100%" }}>
       <b>Agregar muro:</b>
       <form
-        onSubmit={e => {
-          e.preventDefault();
-          agregarMuro();
-        }}
+        onSubmit={onSubmitAgregarMuro}
         style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}
       >
         <label>
@@ -321,28 +423,68 @@ export default function PanelMuros({
             ))}
           </select>
         </label>
-        {mostrarDesplazamiento && (
-          <label>
-            Desplazamiento:
-            <input
-              type="number"
-              value={desplazamiento}
-              onChange={e => setDesplazamiento(Number(e.target.value))}
-              style={{ width: 60 }}
-            />
-          </label>
-        )}
         <button type="submit">Agregar muro</button>
       </form>
+      {/* Editor de muro ventana */}
+      {mostrarEditorVentana && (
+        <MuroVentanaEditor
+          visible={mostrarEditorVentana}
+          onClose={() => setMostrarEditorVentana(false)}
+          onSave={handleGuardarMuroVentana}
+          {...datosPrevios}
+          nodos={nodos}
+          escala={escala}
+          margen={margen}
+          spacePressed={spacePressed} // Pasar spacePressed como prop
+          isPanning={isPanning}       // Pasar isPanning como prop
+          stageScale={stageScale}     // Pasar stageScale como prop
+          handleWheel={handleWheel}   // Pasar handleWheel como prop
+        />
+      )}
       <ul>
-        {muros.map((m, i) => (
+      {muros.map((m, i) => {
+        const desplazar = esSobreEjePrincipal(m.nodoA, m.nodoB);
+        return (
           <li key={i}>
-            {m.tipo} de N{m.nodoA + 1} a N{m.nodoB + 1} (ancho libre: {m.cotaLibre} cm)
-            {m.desplazamiento !== 0 && ` - Desplazado: ${m.desplazamiento} cm`}
-            <button onClick={() => eliminodoarMuro(i)} style={{ marginLeft: 8 }}>Eliminodoar</button>
+            {m.tipo} de N{m.nodoA + 1} a N{m.nodoB + 1}
+            {m.desplazamiento !== 0 && ` - Desplazado: ${m.desplazamiento} cm  `}
+            
+            {/* Mostrar opción de desplazamiento si no está sobre los ejes principales */}
+            {!desplazar && (
+                <label>
+                  Mover:
+                  <input
+                    type="number"
+                    value={m.desplazamiento}
+                    onChange={(e) => {
+                      const nuevoDesplazamiento = parseInt(e.target.value, 10) || 0;
+                      const nuevosMuros = [...muros];
+                      nuevosMuros[i].desplazamiento = nuevoDesplazamiento;
+
+                      // Recalcular las coordenadas del muro según su orientación
+                      const esHorizontal = nodos[m.nodoA].y === nodos[m.nodoB].y; // Verificar si el muro es horizontal
+                      if (esHorizontal) {
+                        // Si el muro es horizontal, el desplazamiento afecta las coordenadas Y
+                        nuevosMuros[i].y1 = m.y1 + nuevoDesplazamiento;
+                        nuevosMuros[i].y2 = m.y2 + nuevoDesplazamiento;
+                      } else {
+                        // Si el muro es vertical, el desplazamiento afecta las coordenadas X
+                        nuevosMuros[i].x1 = m.x1 + nuevoDesplazamiento;
+                        nuevosMuros[i].x2 = m.x2 + nuevoDesplazamiento;
+                      }
+
+                      setMuros(nuevosMuros); // Actualizar el estado de los muros
+                    }}
+                    style={{ marginLeft: 8, width: 80 }}
+                  />
+                </label>
+            )}
+
+            <button onClick={() => eliminodoarMuro(i)} style={{ marginLeft: 8 }}>Eliminar-Muro</button>
           </li>
-        ))}
-      </ul>
+        );
+      })}
+            </ul>
     </div>
   );
 }

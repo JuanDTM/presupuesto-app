@@ -3,6 +3,7 @@ import React from "react";
 import { Stage, Layer, Line, Rect, Text } from "react-konva";
 import Cota from "./Cota";
 import MuroEntero from "./MuroEntero";
+import MuroVentana from "./MuroVentana";
 
 export default function LienzoEjesNodos({
   ancho,
@@ -27,7 +28,7 @@ export default function LienzoEjesNodos({
   muros
 }) {
   // --- margen extra y offset para que todo se vea siempre ---
-    const extraMargin = Math.max(500, Math.max(canvasWidth, canvasHeight) * 0.5);
+    const extraMargin = Math.max(1000, Math.max(canvasWidth, canvasHeight) * 0.5);
     const stageWidth = canvasWidth + extraMargin * 2;
     const stageHeight = canvasHeight + extraMargin * 2;
     const offsetX = extraMargin;
@@ -53,7 +54,7 @@ export default function LienzoEjesNodos({
   return (
     <div
       style={{
-        width: 900,
+        width: 1200,
         height: 600,
         overflow: "auto",
         border: "1px solid #aaa",
@@ -73,7 +74,7 @@ export default function LienzoEjesNodos({
         x={stageX}
         y={stageY}
         onWheel={handleWheel}
-        style={{ background: "#fff", position: "absolute", left: 0, top: 0 }}
+        style={{ background: "#000", position: "absolute", left: 0, top: 0 }}
       >
         <Layer>
           {/* Borde del área útil */}
@@ -195,16 +196,37 @@ export default function LienzoEjesNodos({
             />
           ))}
           {/* Muros */} 
-          {muros && muros.map((muro, idx) => (
-            <MuroEntero
-              key={idx}
-              x1={muro.x1 + offsetX}
-              y1={muro.y1 + offsetY}
-              x2={muro.x2 + offsetX}
-              y2={muro.y2 + offsetY}
-              seleccionado={false}
-            />
-          ))}
+          {muros && muros.map((muro, idx) => {
+            if (muro.tipo === "ventana") {
+              return (
+                <MuroVentana
+                  key={idx}
+                  x1={muro.x1 + offsetX}
+                  y1={muro.y1 + offsetY}
+                  x2={muro.x2 + offsetX}
+                  y2={muro.y2 + offsetY}
+                  muro1={muro.muro1} // Ajustar para que coincida con lo que espera MuroVentana
+                  anchoVentana={muro.anchoVentana}
+                  numeroVentana={muro.numeroVentana}
+                  muro2={muro.muro2} // Ajustar para que coincida con lo que espera MuroVentana
+                  muro3={muro.muro3} // Ajustar para que coincida con lo que espera MuroVentana
+                  altoVentana={muro.altoVentana}
+                  seleccionado={false}
+                />
+              );
+            } else {
+              return (
+                <MuroEntero
+                  key={idx}
+                  x1={muro.x1 + offsetX}
+                  y1={muro.y1 + offsetY}
+                  x2={muro.x2 + offsetX}
+                  y2={muro.y2 + offsetY}
+                  seleccionado={false}
+                />
+              );
+            }
+          })}
                                                              
         </Layer>
       </Stage>
