@@ -6,13 +6,13 @@ import { Line, Text } from "react-konva";
  * Dibuja un muro con ventana entre dos puntos (x1, y1) y (x2, y2)
  * Recibe las dimensiones de los muros laterales y la ventana.
  */
-export default function MuroVentana({
+export default function MuroPuertaVentana({
   anchoVentana,
   altoVentana,
-  numeroVentana,
+  anchoPuerta,
+  posicionPuerta,
   muro1 = 0,
   muro2 = 0,
-  muro3 = 0,
   x1,
   y1,
   x2,
@@ -34,7 +34,7 @@ export default function MuroVentana({
   const grosorBorde = grosor + 4;
   const colorMuro = "#8B4513";
   const colorVentana = "#808080";
-  const colorBorde = "#FFFFFF";
+  const colorMuroBorde = "#FFFFFF";
   const colorVentanaBorde = "#0000FF";
 
   // Función para calcular posiciones
@@ -43,20 +43,34 @@ export default function MuroVentana({
     let actualX = x1;
     let actualY = y1;
 
-    if (muro1) {
-      posiciones.push({
-        tipo: "muro",
-        xInicio: actualX,
-        yInicio: actualY,
-        xFin: esHorizontal ? actualX + muro1* 2 : actualX,
-        yFin: esHorizontal ? actualY : actualY + muro1* 2,
-        texto: `${muro1} cm`,
-      });
-      actualX = esHorizontal ? actualX + muro1* 2 : actualX;
-      actualY = esHorizontal ? actualY : actualY + muro1* 2;
+    
+    if (posicionPuerta === "izquierda") {
+        // Puerta al comienzo
+        posiciones.push({
+          tipo: "puerta",
+          xInicio: actualX,
+          yInicio: actualY,
+          xFin: esHorizontal ? actualX + anchoPuerta * 2 : actualX,
+          yFin: esHorizontal ? actualY : actualY + anchoPuerta * 2,
+          texto: `${anchoPuerta} cm`,
+        });
+        actualX = esHorizontal ? actualX + anchoPuerta * 2 : actualX;
+        actualY = esHorizontal ? actualY : actualY + anchoPuerta * 2;
     }
 
-    if (numeroVentana >= 1) {
+    if (muro1) {
+        posiciones.push({
+          tipo: "muro",
+          xInicio: actualX,
+          yInicio: actualY,
+          xFin: esHorizontal ? actualX + muro1*2 : actualX,
+          yFin: esHorizontal ? actualY : actualY + muro1*2,
+          texto: `${muro1} cm`,
+        });
+        actualX = esHorizontal ? actualX + muro1*2 : actualX;
+        actualY = esHorizontal ? actualY : actualY + muro1*2;
+      }
+    // Agregar la ventana
       posiciones.push({
         tipo: "ventana",
         xInicio: actualX,
@@ -67,7 +81,7 @@ export default function MuroVentana({
       });
       actualX = esHorizontal ? actualX + anchoVentana* 2 : actualX;
       actualY = esHorizontal ? actualY : actualY + anchoVentana* 2;
-    }
+    
 
     if (muro2) {
       posiciones.push({
@@ -82,28 +96,16 @@ export default function MuroVentana({
       actualY = esHorizontal ? actualY : actualY + muro2*2;
     }
 
-    if (numeroVentana === 2) {
-      posiciones.push({
-        tipo: "ventana",
-        xInicio: actualX,
-        yInicio: actualY,
-        xFin: esHorizontal ? actualX + anchoVentana*2 : actualX,
-        yFin: esHorizontal ? actualY : actualY + anchoVentana*2,
-        texto: `${anchoVentana} cm`,
-      });
-      actualX = esHorizontal ? actualX + anchoVentana*2 : actualX;
-      actualY = esHorizontal ? actualY : actualY + anchoVentana*2;
-    }
-
-    if (muro3) {
-      posiciones.push({
-        tipo: "muro",
-        xInicio: actualX,
-        yInicio: actualY,
-        xFin: esHorizontal ? actualX + muro3*2 : actualX,
-        yFin: esHorizontal ? actualY : actualY + muro3*2,
-        texto: `${muro3} cm`,
-      });
+    if (posicionPuerta === "derecha") {
+        // Puerta al final
+        posiciones.push({
+          tipo: "puerta",
+          xInicio: actualX,
+          yInicio: actualY,
+          xFin: esHorizontal ? actualX + anchoPuerta * 2 : actualX,
+          yFin: esHorizontal ? actualY : actualY + anchoPuerta * 2,
+          texto: `${anchoPuerta} cm`,
+        });
     }
 
     return posiciones;
@@ -119,7 +121,7 @@ export default function MuroVentana({
           {/* Borde */}
           <Line
             points={[pos.xInicio, pos.yInicio, pos.xFin, pos.yFin]}
-            stroke={pos.tipo === "muro" ? colorBorde : colorVentanaBorde}
+            stroke={pos.tipo === "muro" ? colorMuroBorde : pos.tipo === "ventana" ? colorVentanaBorde: "transparent"}
             strokeWidth={grosorBorde}
             lineCap="butt"
             lineJoin="miter"
@@ -130,7 +132,7 @@ export default function MuroVentana({
           {/* Elemento principal */}
           <Line
             points={[pos.xInicio, pos.yInicio, pos.xFin, pos.yFin]}
-            stroke={pos.tipo === "muro" ? colorMuro : colorVentana}
+            stroke={pos.tipo === "muro" ? colorMuro : pos.tipo === "ventana" ? colorVentana : "transparent"}
             strokeWidth={grosor}
             lineCap="butt"
             lineJoin="miter"

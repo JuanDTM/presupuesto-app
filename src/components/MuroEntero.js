@@ -13,7 +13,7 @@ export default function MuroEntero({
 }) {
   // El borde será 2px más grueso que el muro interior
   const color_relleno= "#8B4513";     // color café claro D2B48C
-  const color_borde = "#696969";         //color negro
+  const color_borde = "#FFFFFF";         //color negro
   const grosor =20;
   const grosorBorde = grosor + 4;
   // Calcular la longitud del muro

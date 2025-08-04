@@ -1,13 +1,15 @@
 // PanelMuros.js
 import React, { useState, useEffect } from "react";
 import MuroVentanaEditor from "./MuroVentanaEditor"; // tu editor modal
+import MuroPuertaEditor from "./MuroPuertaEditor"; // tu editor modal
+import MuroPuertaVentanaEditor from "./MuroPuertaVentanaEditor"; // tu editor modal para puerta ventana
 
 //tipo de muros
 const tiposMuros = [
   { value: "entero", label: "Muro entero" },
   { value: "ventana", label: "Muro ventana" },
   { value: "puerta", label: "Muro puerta" },
-  { value: "puertaventanodoa", label: "Muro puertaventanodoa" },
+  { value: "puertaventana", label: "Muro puerta ventana" },
 ];
 
 export default function PanelMuros({
@@ -91,7 +93,13 @@ export default function PanelMuros({
     { x: ejesPrincipales.derecho.x1, y: ejesPrincipales.inferior.y1 },  // Nodo inferior derecho
   ];
 
+  // conatante de editor ventana
   const [mostrarEditorVentana, setMostrarEditorVentana] = useState(false);
+  // constante de editor puerta
+  const [mostrarEditorPuerta, setMostrarEditorPuerta] = useState(false);
+  //constante de editor puerta ventana
+  const [mostrarEditorPuertaVentana, setMostrarEditorPuertaVentana] = useState(false);
+
   const [datosPrevios, setDatosPrevios] = useState(null);
 
    // Devuelve dimensiones del nodo según nivel y orientación
@@ -333,6 +341,34 @@ export default function PanelMuros({
       });
       setMostrarEditorVentana(true);
       return;
+    }else if (tipoMuro === "puerta") {
+      // Abre el editor especial para muro puerta
+      setDatosPrevios({
+        nodoA,
+        nodoB,
+        desplazamiento: desplaz,
+        escala,
+        margen,
+        cotaLibre,
+        altura,
+        x1, y1, x2, y2 // puntos listos para dibujar
+      });
+      setMostrarEditorPuerta(true);
+      return;
+    }else if (tipoMuro === "puertaventana") {
+      // Abre el editor especial para muro puerta ventana
+      setDatosPrevios({
+        nodoA,
+        nodoB,
+        desplazamiento: desplaz,
+        escala,
+        margen,
+        cotaLibre,
+        altura,
+        x1, y1, x2, y2 // puntos listos para dibujar
+      });
+      setMostrarEditorPuertaVentana(true);
+      return;
     }
    
   }
@@ -351,42 +387,30 @@ export default function PanelMuros({
     setDatosPrevios(null);
   }
 
-  function agregarMuro() {
-    if (nodoA === nodoB) return;
-
-    const cotaLibre = calcularCotaLibre(
-      nodos[nodoA], nodos[nodoB], nodoA, nodoB
-    );
-
-    if (cotaLibre <= 0) {
-      alert("La distancia libre entre los nodos debe ser mayor a 0 cm.");
-      return;
-    }
-
-    const desplaz = esSobreEjePrincipal(nodoA, nodoB) ? 0 : desplazamiento;
-    console.log("Desplazamiento:", desplaz);
-
-    // Calcula los puntos ajustados del muro
-    const { x1, y1, x2, y2 } = calcularPuntosMuro(
-      nodos[nodoA],
-      nodos[nodoB],
-      nodoA,
-      nodoB,
-      desplaz
-    );
-
-    setMuros([
-      ...muros,
-      {
-        tipo: tipoMuro,
-        nodoA,
-        nodoB,
-        desplazamiento: desplaz,
-        cotaLibre,
-        x1, y1, x2, y2 // puntos listos para dibujar
-      },
-    ]);
+  // --- NUEVO: Función para puerta desde su editor ---
+  function handleGuardarMuroPuerta(datosMuroPuerta) {
+    console.log("Datos recibidos en PanelMuros:", datosMuroPuerta);
+    setMuros((prevMuros) => {
+      const nuevosMuros = [...prevMuros, datosMuroPuerta];
+      console.log("Estado actualizado de muros:", nuevosMuros);
+      return nuevosMuros;
+    });
+    setMostrarEditorPuerta(false);
+    setDatosPrevios(null);
   }
+
+  // --- NUEVO: Función para puerta ventana desde su editor ---
+  function handleGuardarMuroPuertaVentana(datosMuroPuertaVentana) {
+    console.log("Datos recibidos en PanelMuros:", datosMuroPuertaVentana);
+    setMuros((prevMuros) => {
+      const nuevosMuros = [...prevMuros, datosMuroPuertaVentana];
+      console.log("Estado actualizado de muros:", nuevosMuros);
+      return nuevosMuros;
+    });
+    setMostrarEditorPuertaVentana(false);
+    setDatosPrevios(null);
+  }
+
 
   function eliminodoarMuro(nodoClave) {
     setMuros(muros.filter((_, i) => i !== nodoClave));
@@ -431,6 +455,38 @@ export default function PanelMuros({
           visible={mostrarEditorVentana}
           onClose={() => setMostrarEditorVentana(false)}
           onSave={handleGuardarMuroVentana}
+          {...datosPrevios}
+          nodos={nodos}
+          escala={escala}
+          margen={margen}
+          spacePressed={spacePressed} // Pasar spacePressed como prop
+          isPanning={isPanning}       // Pasar isPanning como prop
+          stageScale={stageScale}     // Pasar stageScale como prop
+          handleWheel={handleWheel}   // Pasar handleWheel como prop
+        />
+      )}
+      {/* Editor de muro puerta */}
+      {mostrarEditorPuerta && (
+        <MuroPuertaEditor
+          visible={mostrarEditorPuerta}
+          onClose={() => setMostrarEditorPuerta(false)}
+          onSave={handleGuardarMuroPuerta}
+          {...datosPrevios}
+          nodos={nodos}
+          escala={escala}
+          margen={margen}
+          spacePressed={spacePressed} // Pasar spacePressed como prop
+          isPanning={isPanning}       // Pasar isPanning como prop
+          stageScale={stageScale}     // Pasar stageScale como prop
+          handleWheel={handleWheel}   // Pasar handleWheel como prop
+        />
+      )}
+      {/* Editor de muro puerta ventana */}
+      {mostrarEditorPuertaVentana && (
+        <MuroPuertaVentanaEditor
+          visible={mostrarEditorPuertaVentana}
+          onClose={() => setMostrarEditorPuertaVentana(false)}
+          onSave={handleGuardarMuroPuertaVentana}
           {...datosPrevios}
           nodos={nodos}
           escala={escala}
