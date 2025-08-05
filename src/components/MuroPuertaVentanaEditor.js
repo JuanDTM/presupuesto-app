@@ -24,21 +24,6 @@ export default function MuroPuertaVentanaEditor({
   ...props
 }) {
 
-  //necesito ver en cosola todo lo que llega desde // el padre para ver si hay algo que no estoy usando
-  console.log("parametro visible:", visible);
-  console.log("parametro onClose:", onClose);
-  console.log("parametro onSave:", onSave);
-  console.log("parametro nodoA:", nodoA);
-  console.log("parametro nodoB:", nodoB);
-  console.log("parametro desplazamiento:", desplazamiento);
-  console.log("parametro escala:", escala);
-  console.log("parametro margen:", margen);
-  console.log("parametro altura:", altura);
-  console.log("parametro x1:", x1);
-  console.log("parametro y1:", y1);
-  console.log("parametro x2:", x2);
-  console.log("parametro y2:", y2);
-
  // Estados para los inputs
  const [anchoVentana, setAnchoVentana] = useState(45);
  const [altoVentana, setAltoVentana] = useState(110);
@@ -204,7 +189,7 @@ if (posicionPuerta === "izquierda") {
             }}
             disabled={anchoTotal > cotaLibre}
           >aceptar</button>
-          <button onClick={onClose} style={{ marginLeft: 16, fontSize: 20 }}>Cancelar</button>
+         <button onClick={onClose} style={{ marginLeft: 16, fontSize: 20 }}>Cancelar</button>
         </div>
         {/* Canvas de diseño */}
         <div style={{ background: "#111", borderRadius: 8, padding: 16, minWidth: 1000, minHeight: 500 }}>

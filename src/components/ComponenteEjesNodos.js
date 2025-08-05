@@ -4,6 +4,33 @@ import LienzoEjesNodos from "./LienzoEjesNodos";
 import PanelCotas, { calcularCota } from "./PanelCotas"; // Importa la función
 import PanelMuros from "./PanelMuros";
 
+// Hook personalizado para localStorage
+function useLocalStorage(key, defaultValue) {
+  const [value, setValue] = useState(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item && item !== "undefined" ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.warn(`Error leyendo la clave "${key}" en localStorage:`, error);
+      return defaultValue;
+    }
+  });
+
+  const setStoredValue = (newValue) => {
+    try {
+      setValue(newValue);
+      window.localStorage.setItem(key, JSON.stringify(newValue)); // Guardar datos en localStorage
+    } catch (error) {
+      console.warn(`Error guardando la clave "${key}" en localStorage:`, error);
+    }
+  };
+
+  useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value)); // Sincronizar localStorage cada vez que el estado cambie
+  }, [key, value]);
+
+  return [value, setStoredValue];
+}
 //consatante niveles para definir los tamaños de los nodos
 const niveles = [
   { value: "1 de 1", ancho: 12, alto: 20 },
@@ -20,14 +47,14 @@ const niveles = [
  */
 export default function ComponenteEjesNodos() {
   // Estados principales
-  const [altura, setAltura] = useState(220); // altura de los muros por defecto 220cm, se puede ajustar según el diseño
-  const [ancho, setAncho] = useState(200); // ancho por defecto de diseño en 200cm, se puede ajustar según el diseño
-  const [largo, setLargo] = useState(150);   // largo por defecto de diseño en 150cm, se puede ajustar según el diseño
-  const [nivel, setNivel] = useState(niveles[0].value);  // nivel actual por defecto 1 de 1
-  const [ejesSecundarios, setEjesSecundarios] = useState([]); // Ejes secundarios iniciales vacíos, con su función de agregar y deshacer
-  const [orientacionesNodos, setOrientacionesNodos] = useState({}); // Orientaciones de nodos, se inicializa vacío y se actualiza según el nivel
-  const [cotas, setCotas] = useState([]); // Estado para cotas entre ejes, con su funcion de agregar y eliminar cotas
-  const [muros, setMuros] = useState([]); // <--- Estado para muros
+  const [altura, setAltura] = useLocalStorage("altura", 220); // altura de los muros por defecto 220cm, se puede ajustar según el diseño
+  const [ancho, setAncho] = useLocalStorage("ancho", 200); // ancho por defecto de diseño en 200cm, se puede ajustar según el diseño
+  const [largo, setLargo] = useLocalStorage("largo", 150);   // largo por defecto de diseño en 150cm, se puede ajustar según el diseño
+  const [nivel, setNivel] = useLocalStorage("nivel", niveles[0].value);  // nivel actual por defecto 1 de 1
+  const [ejesSecundarios, setEjesSecundarios] = useLocalStorage("ejesSecundarios", []); // Ejes secundarios iniciales vacíos, con su función de agregar y deshacer
+  const [orientacionesNodos, setOrientacionesNodos] = useLocalStorage("orientacionesNodos", {}); // Orientaciones de nodos, se inicializa vacío y se actualiza según el nivel
+  const [cotas, setCotas] = useLocalStorage("cotas", []); // Estado para cotas entre ejes, con su funcion de agregar y eliminar cotas
+  const [muros, setMuros] = useLocalStorage("muros", []); // <--- Estado para muros
 
   // Estados para selección de nodos de muro
   const [nodoMuroA, setNodoMuroA] = useState(0);
@@ -183,6 +210,19 @@ export default function ComponenteEjesNodos() {
     setIsPanning(false);    // Desactiva el modo pan
   };
 
+  const limpiarDatos = () => {
+    if (window.confirm("¿Estás seguro de que quieres limpiar todos los datos?")) {
+      localStorage.removeItem("muros"); // Eliminar solo los datos de muros
+      localStorage.removeItem("ejesSecundarios"); // Eliminar solo los datos de ejes secundarios
+      setMuros([]); // Resetear el estado de muros
+      setEjesSecundarios([]); // Resetear el estado de ejes secundarios
+    }
+  };
+
+  useEffect(() => {
+    console.log("Muros recuperados:", muros);
+    console.log("Ejes secundarios recuperados:", ejesSecundarios);
+  }, []);
   // Detectar barra espaciadora
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -284,6 +324,9 @@ export default function ComponenteEjesNodos() {
         <button onClick={zoomIn}>Zoom +</button>
         <button onClick={zoomOut}>Zoom -</button>
         <button onClick={centrarVista}>Centrar vista</button>
+        <button onClick={limpiarDatos} style={{ backgroundColor: "#ff4444", color: "white" }}>
+          Limpiar datos
+        </button>
         
       </div>
 

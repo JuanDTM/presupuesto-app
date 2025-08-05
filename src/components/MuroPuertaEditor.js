@@ -24,21 +24,6 @@ export default function MuroPuertaEditor({
   ...props
 }) {
 
-  //necesito ver en cosola todo lo que llega desde // el padre para ver si hay algo que no estoy usando
-  console.log("parametro visible:", visible);
-  console.log("parametro onClose:", onClose);
-  console.log("parametro onSave:", onSave);
-  console.log("parametro nodoA:", nodoA);
-  console.log("parametro nodoB:", nodoB);
-  console.log("parametro desplazamiento:", desplazamiento);
-  console.log("parametro escala:", escala);
-  console.log("parametro margen:", margen);
-  console.log("parametro altura:", altura);
-  console.log("parametro x1:", x1);
-  console.log("parametro y1:", y1);
-  console.log("parametro x2:", x2);
-  console.log("parametro y2:", y2);
-
  // Estados para los inputs
  const [anchoPuerta, setAnchoPuerta] = useState(45);
  const [muro1, setMuro1] = useState(60);

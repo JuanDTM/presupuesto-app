@@ -102,6 +102,8 @@ export default function PanelMuros({
 
   const [datosPrevios, setDatosPrevios] = useState(null);
 
+  const [indiceMuroEditando, setIndiceMuroEditando] = useState(null);
+
    // Devuelve dimensiones del nodo según nivel y orientación
    function getDimensionesNodo(nodoN) {
     if (nivel === "1 de 1") {
@@ -378,42 +380,86 @@ export default function PanelMuros({
     console.log("Datos recibidos en PanelMuros:", datosMuroVentana);
   
     setMuros((prevMuros) => {
-      const nuevosMuros = [...prevMuros, datosMuroVentana];
-      console.log("Estado actualizado de muros:", nuevosMuros);
-      return nuevosMuros;
+      if (indiceMuroEditando !== null) {
+        // Modificar el muro existente
+        const nuevosMuros = [...prevMuros];
+        nuevosMuros[indiceMuroEditando] = datosMuroVentana;
+        return nuevosMuros;
+      } else {
+        // Agregar uno nuevo
+        return [...prevMuros, datosMuroVentana];
+      }
     });
   
     setMostrarEditorVentana(false);
     setDatosPrevios(null);
+    setIndiceMuroEditando(null);
   }
 
   // --- NUEVO: Función para puerta desde su editor ---
   function handleGuardarMuroPuerta(datosMuroPuerta) {
     console.log("Datos recibidos en PanelMuros:", datosMuroPuerta);
     setMuros((prevMuros) => {
-      const nuevosMuros = [...prevMuros, datosMuroPuerta];
-      console.log("Estado actualizado de muros:", nuevosMuros);
-      return nuevosMuros;
+      if (indiceMuroEditando !== null) {
+        // Modificar el muro existente
+        const nuevosMuros = [...prevMuros];
+        nuevosMuros[indiceMuroEditando] = datosMuroPuerta;
+        return nuevosMuros;
+      } else {
+        // Agregar uno nuevo
+        return [...prevMuros, datosMuroPuerta];
+      }
     });
     setMostrarEditorPuerta(false);
     setDatosPrevios(null);
+    setIndiceMuroEditando(null);
   }
 
   // --- NUEVO: Función para puerta ventana desde su editor ---
   function handleGuardarMuroPuertaVentana(datosMuroPuertaVentana) {
-    console.log("Datos recibidos en PanelMuros:", datosMuroPuertaVentana);
     setMuros((prevMuros) => {
-      const nuevosMuros = [...prevMuros, datosMuroPuertaVentana];
-      console.log("Estado actualizado de muros:", nuevosMuros);
-      return nuevosMuros;
+      if (indiceMuroEditando !== null) {
+        // Modificar el muro existente
+        const nuevosMuros = [...prevMuros];
+        nuevosMuros[indiceMuroEditando] = datosMuroPuertaVentana;
+        return nuevosMuros;
+      } else {
+        // Agregar uno nuevo
+        return [...prevMuros, datosMuroPuertaVentana];
+      }
     });
     setMostrarEditorPuertaVentana(false);
     setDatosPrevios(null);
+    setIndiceMuroEditando(null); // <--- Limpia el índice
   }
 
 
   function eliminodoarMuro(nodoClave) {
     setMuros(muros.filter((_, i) => i !== nodoClave));
+  }
+
+  function modificarMuro(nodoClave) {
+    const muro = muros[nodoClave];
+    setDatosPrevios({
+      ...muro,
+      escala,
+      margen,
+      nodos,
+      espacioPresionado: spacePressed,
+      isPanning,
+      stageScale,
+      handleWheel,
+      muroInicial: muro, // <--- Pasa el muro original
+    });
+    setIndiceMuroEditando(nodoClave); // <--- Guarda el índice
+  
+    if (muro.tipo === "ventana") {
+      setMostrarEditorVentana(true);
+    } else if (muro.tipo === "puerta") {
+      setMostrarEditorPuerta(true);
+    } else if (muro.tipo === "puertaventana") {
+      setMostrarEditorPuertaVentana(true);
+    }
   }
 
   return (
@@ -453,9 +499,12 @@ export default function PanelMuros({
       {mostrarEditorVentana && (
         <MuroVentanaEditor
           visible={mostrarEditorVentana}
-          onClose={() => setMostrarEditorVentana(false)}
+          onClose={() => {setMostrarEditorVentana(false);
+            setIndiceMuroEditando(null);
+          }}
           onSave={handleGuardarMuroVentana}
           {...datosPrevios}
+          muroInicial={datosPrevios?.muroInicial}
           nodos={nodos}
           escala={escala}
           margen={margen}
@@ -469,9 +518,13 @@ export default function PanelMuros({
       {mostrarEditorPuerta && (
         <MuroPuertaEditor
           visible={mostrarEditorPuerta}
-          onClose={() => setMostrarEditorPuerta(false)}
+          onClose={() => {setMostrarEditorPuerta(false);
+            setIndiceMuroEditando(null);
+          }
+          }
           onSave={handleGuardarMuroPuerta}
           {...datosPrevios}
+          muroInicial={datosPrevios?.muroInicial}
           nodos={nodos}
           escala={escala}
           margen={margen}
@@ -485,9 +538,12 @@ export default function PanelMuros({
       {mostrarEditorPuertaVentana && (
         <MuroPuertaVentanaEditor
           visible={mostrarEditorPuertaVentana}
-          onClose={() => setMostrarEditorPuertaVentana(false)}
+          onClose={() => {setMostrarEditorPuertaVentana(false);
+            setIndiceMuroEditando(null);
+          }}
           onSave={handleGuardarMuroPuertaVentana}
           {...datosPrevios}
+          muroInicial={datosPrevios?.muroInicial}
           nodos={nodos}
           escala={escala}
           margen={margen}
@@ -535,7 +591,7 @@ export default function PanelMuros({
                   />
                 </label>
             )}
-
+            <button onClick = {()=>modificarMuro(i)} style={{ marginLeft: 8 }} hidden={m.tipo === "entero"}>Modificar</button>
             <button onClick={() => eliminodoarMuro(i)} style={{ marginLeft: 8 }}>Eliminar-Muro</button>
           </li>
         );
