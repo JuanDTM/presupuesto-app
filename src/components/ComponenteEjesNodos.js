@@ -3,13 +3,16 @@ import React, { useRef, useEffect, useState } from "react";
 import LienzoEjesNodos from "./LienzoEjesNodos";
 import PanelCotas, { calcularCota } from "./PanelCotas"; // Importa la función
 import PanelMuros from "./PanelMuros";
+import PanelSuplemento from "./PanelSuplemento";
 
 // Hook personalizado para localStorage
 function useLocalStorage(key, defaultValue) {
   const [value, setValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item && item !== "undefined" ? JSON.parse(item) : defaultValue;
+      const parsed = item && item !== "undefined" ? JSON.parse(item) : defaultValue;
+      // Asegurar que si defaultValue es array, siempre retornemos array
+      return Array.isArray(defaultValue) ? (Array.isArray(parsed) ? parsed : defaultValue) : parsed;
     } catch (error) {
       console.warn(`Error leyendo la clave "${key}" en localStorage:`, error);
       return defaultValue;
@@ -47,6 +50,9 @@ const niveles = [
  */
 export default function ComponenteEjesNodos() {
   // Estados principales
+  const viewportWidth = 1000;   // Debe coincidir con LienzoEjesNodos
+  const viewportHeight = 600;   // Debe coincidir con LienzoEjesNodos
+
   const [altura, setAltura] = useLocalStorage("altura", 220); // altura de los muros por defecto 220cm, se puede ajustar según el diseño
   const [ancho, setAncho] = useLocalStorage("ancho", 200); // ancho por defecto de diseño en 200cm, se puede ajustar según el diseño
   const [largo, setLargo] = useLocalStorage("largo", 150);   // largo por defecto de diseño en 150cm, se puede ajustar según el diseño
@@ -55,10 +61,12 @@ export default function ComponenteEjesNodos() {
   const [orientacionesNodos, setOrientacionesNodos] = useLocalStorage("orientacionesNodos", {}); // Orientaciones de nodos, se inicializa vacío y se actualiza según el nivel
   const [cotas, setCotas] = useLocalStorage("cotas", []); // Estado para cotas entre ejes, con su funcion de agregar y eliminar cotas
   const [muros, setMuros] = useLocalStorage("muros", []); // <--- Estado para muros
+  const [suplementos, setSuplementos] = useLocalStorage("suplementos", []); // Estado para suplementos, con su función de agregar y eliminar suplementos
+  const [ejesTerciarios, setEjesTerciarios] = useLocalStorage("ejesTerciarios",[]); // Estado para ejes terciarios, se inicializa vacío y se actualiza según el diseño
 
   // Estados para selección de nodos de muro
-  const [nodoMuroA, setNodoMuroA] = useState(0);
-  const [nodoMuroB, setNodoMuroB] = useState(1);
+  const [nodoA, setNodoA] = useState(0);
+  const [nodoB, setNodoB] = useState(1);
 
   // Zoom y pan
   const [stageScale, setStageScale] = useState(1);  // zoom inicial, con función de zoom in y out, para minimizar y maximizar el canvas
@@ -73,55 +81,77 @@ export default function ComponenteEjesNodos() {
 
   // --- VARIABLES DE DIBUJO Y MÁRGENES (ORDEN CORRECTO) ---
   const escala = 2;         // Factor de escala para convertir cm a px, se puede ajustar según el diseño
-  const margen = 50;        // Margen en px alrededor del canvas, se puede ajustar según el diseño
+  const margen = 150;        // Margen en px alrededor del canvas, se puede ajustar según el diseño
   const canvasWidth = margen + ancho * escala + margen;             // Ancho total del canvas en px
   const canvasHeight = margen + largo * escala + margen;             // Largo total del canvas en px
   const extraMargin = Math.max(500, Math.max(canvasWidth, canvasHeight) * 0.5);             // Margen extra para centrar el canvas en la pantalla, se puede ajustar según el diseño
   const stageWidth = canvasWidth + extraMargin * 2;                     // Ancho total del stage con margen extra
-  const stageHeight = canvasHeight + extraMargin * 2;                   // largo total del stage con margen extra 
+  const stageHeight = canvasHeight + extraMargin * 2;                  // largo total del stage con margen extra 
   const offsetX = extraMargin;          // Offset para centrar el canvas en la pantalla en X
   const offsetY = extraMargin;          // Offset para centrar el canvas en la pantalla en Y
 
   // Ejes principales
-  const eje0 = { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen };       // Eje principal superior
-  const eje1 = { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + largo * escala };      // Eje principal derecho
-  const eje2 = { x1: margen + ancho * escala, y1: margen + largo * escala, x2: margen, y2: margen + largo * escala };       // Eje principal inferior
-  const eje3 = { x1: margen, y1: margen + largo * escala, x2: margen, y2: margen };      // Eje principal izquierdo
+  const ejeSuperior = { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen };       // Eje principal superior
+  const ejederecho = { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + largo * escala };      // Eje principal derecho
+  const ejeInferior = { x1: margen + ancho * escala, y1: margen + largo * escala, x2: margen, y2: margen + largo * escala };       // Eje principal inferior
+  const ejeIzquierdo = { x1: margen, y1: margen + largo * escala, x2: margen, y2: margen };      // Eje principal izquierdo
 
   // Filtrar ejes secundarios por orientación
-  const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");     // Filtrar ejes secundarios verticales
-  const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");     // Filtrar ejes secundarios horizontales
+  const ejesVerticales = ejesSecundarios.filter(e => e.orientacion === "V");     // Filtrar ejes secundarios verticales
+  const ejesHorizontales = ejesSecundarios.filter(e => e.orientacion === "H");     // Filtrar ejes secundarios horizontales
 
   // Nodos iniciales basados en los ejes principales
-  let nodos = [
-    { x: eje0.x1, y: eje0.y1 },     // Nodo superior izquierdo
-    { x: eje1.x1, y: eje1.y1 },     // Nodo superior derecho
-    { x: eje2.x1, y: eje2.y1 },     // Nodo inferior derecho
-    { x: eje3.x1, y: eje3.y1 },   // Nodo inferior izquierdo
+  let nodosPrincipales = [
+    { x: ejeSuperior.x1, y: ejeSuperior.y1 },     // Nodo superior izquierdo
+    { x: ejederecho.x1, y: ejederecho.y1 },     // Nodo superior derecho
+    { x: ejeInferior.x1, y: ejeInferior.y1 },     // Nodo inferior derecho
+    { x: ejeIzquierdo.x1, y: ejeIzquierdo.y1 },   // Nodo inferior izquierdo
   ];
  
+  // Nodos secundarios
+  const nodosSecundarios = [];
   // Agregar ejes secundarios y nodos
-  ejesV.forEach((ev) => {                         // Agregar nodos para ejes secundarios verticales
-    const x = eje0.x1 + ev.distancia * escala;    // Calcular la posición X del eje secundario
-    nodos.push({ x, y: eje0.y1 });                // Nodo superior del eje secundario
-    nodos.push({ x, y: eje2.y1 });                // Nodo inferior del eje secundario
-    ejesH.forEach((eh) => {                       // Agregar nodos en la intersección de ejes secundarios
-      const y = eje0.y1 + eh.distancia * escala;  // Calcular la posición Y del eje secundario
-      nodos.push({ x, y });                       // Nodo de intersección
+  ejesVerticales.forEach((ejeVertical) => {                         // Agregar nodos para ejes secundarios verticales
+    const x = ejeSuperior.x1 + ejeVertical.distancia * escala;    // Calcular la posición X del eje secundario
+    nodosSecundarios.push({ x, y: ejeSuperior.y1 });                // Nodo superior del eje secundario
+    nodosSecundarios.push({ x, y: ejeInferior.y1 });                // Nodo inferior del eje secundario
+    ejesHorizontales.forEach((ejeHorizontal) => {                       // Agregar nodos en la intersección de ejes secundarios
+      const y = ejeSuperior.y1 + ejeHorizontal.distancia * escala;  // Calcular la posición Y del eje secundario
+      nodosSecundarios.push({ x, y });                       // Nodo de intersección
     });
   });
   
-  ejesH.forEach((eh) => {                         // Agregar nodos para ejes secundarios horizontales
-    const y = eje0.y1 + eh.distancia * escala;    // Calcular la posición Y del eje secundario
-    nodos.push({ x: eje0.x1, y });                // Nodo izquierdo del eje secundario
-    nodos.push({ x: eje1.x1, y });                // Nodo derecho del eje secundario
+  ejesHorizontales.forEach((ejeHorizontal) => {                         // Agregar nodos para ejes secundarios horizontales
+    const y = ejeSuperior.y1 + ejeHorizontal.distancia * escala;    // Calcular la posición Y del eje secundario
+    nodosSecundarios.push({ x: ejeSuperior.x1, y });                // Nodo izquierdo del eje secundario
+    nodosSecundarios.push({ x: ejederecho.x1, y });                // Nodo derecho del eje secundario
   });
-  // Eliminar nodos duplicados basados en posición (x, y) para evitar superposiciones
+
+  const nodosTerciarios = []; // Array para almacenar las cotas entre nodos terciarios  
+  // Agregar nodos de los ejes terciarios
+  if (nivel !== "1 de 1" && nivel !== "1 de 2" && nivel !== "1 de 3" ) {  // Solo agregar nodos a ejes terciarios si el nivel es diferente de nivel 1
+    (suplementos || []).forEach((suplemento) => {  // Agregar nodos para suplementos
+      if(suplemento.tipo==="volado"){  // Solo agregar nodos si el suplemento es de tipo volado
+        (suplemento.ejesTerciarios || []).forEach((ejeTerciario) => {  // Agregar nodos para ejes terciarios
+          if(ejeTerciario.coordenada==="transversal"){
+            const x = ejeTerciario.x2;  // Usar la posición X del eje terciario
+            const y = ejeTerciario.y2;  // Usar la posición Y del eje terciario
+            nodosTerciarios.push({ x, y });       // Nodo del eje terciario
+          }                                             
+        });
+      }
+    });
+  }
+
+  let nodos = [...nodosPrincipales, ...nodosSecundarios, ...nodosTerciarios]; // Combina los nodos principales, secundarios y terciarios
+
+  // Eliminar nodos duplicados
   nodos = nodos.filter(
     (n, idx, arr) =>
-      arr.findIndex(m => Math.abs(m.x - n.x) < 1 && Math.abs(m.y - n.y) < 1) === idx  // Compara con una tolerancia de 1 px para evitar duplicados por precisión de escala
+      arr.findIndex(m => Math.abs(m.x - n.x) < 1 && Math.abs(m.y - n.y) < 1) === idx
   );
 
+  
   // Handlers para agregar ejes secundarios
   const [orientacion, setOrientacion] = useState("V");      // Orientación del eje secundario, por defecto vertical
   const [distancia, setDistancia] = useState(0);            // Distancia del eje secundario desde el eje principal, por defecto 0
@@ -132,7 +162,7 @@ export default function ComponenteEjesNodos() {
       (orientacion === "V" && distancia > 0 && distancia < ancho) ||
       (orientacion === "H" && distancia > 0 && distancia < largo)      //compara la distancia con el ancho o largo según la orientación
     ) {
-      setEjesSecundarios([...ejesSecundarios, { orientacion, distancia }]);     // Agrega el nuevo eje secundario al estado
+      setEjesSecundarios([...ejesSecundarios, { orientacion, distancia }]);     // Agrega el nuejeVerticalo eje secundario al estado
       setDistancia(0);          // Resetea la distancia a 0 después de agregar el eje
     }
   };
@@ -149,48 +179,52 @@ export default function ComponenteEjesNodos() {
 
   // --- ZOOM CON LA RUEDA DEL MOUSE ---
   const handleWheel = (e) => {
-    e.evt.preventDefault();
-    const scaleBy = 1.1;  // Factor de zoom 
-    const oldScale = stageScale;  // Escala actual 
-    const pointer = e.target.getStage().getPointerPosition();   // Posición del puntero del mouse
+    // Verificar si el evento tiene preventDefault
+    if (e.evt && e.evt.preventDefault) {
+      e.evt.preventDefault(); // Llamar a preventDefault solo si está disponible
+    }
+  
+    const scaleBy = 1.1; // Factor de zoom
+    const oldScale = stageScale; // Escala actual
+    const pointer = e.target.getStage().getPointerPosition(); // Posición del puntero del mouse
     const mousePointTo = {
-      x: (pointer.x - stageX) / oldScale,       // Punto del mouse en coordenadas del stage en X
-      y: (pointer.y - stageY) / oldScale,       // Punto del mouse en coordenadas del stage en Y
+      x: (pointer.x - stageX) / oldScale, // Punto del mouse en coordenadas del stage en X
+      y: (pointer.y - stageY) / oldScale, // Punto del mouse en coordenadas del stage en Y
     };
-    let newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;  // Zoom in/out
-    newScale = Math.max(0.05, Math.min(10, newScale));  // Limita el zoom entre 0.05 y 10
-    // Nuevo stageX y stageY para centrar el zoom en el mouse
-    setStageScale(newScale);  // Actualiza el estado con la nueva escala
-    setStageX(pointer.x - mousePointTo.x * newScale);   // Calcula la nueva posición X
-    setStageY(pointer.y - mousePointTo.y * newScale);   // Calcula la nueva posición Y
+    let newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy; // Zoom in/out
+    newScale = Math.max(0.05, Math.min(10, newScale)); // Limita el zoom entre 0.05 y 10
+    // Nuevas posiciones stageX y stageY para centrar el zoom en el mouse
+    setStageScale(newScale); // Actualiza el estado con la nueva escala
+    setStageX(pointer.x - mousePointTo.x * newScale); // Calcula la nueva posición X
+    setStageY(pointer.y - mousePointTo.y * newScale); // Calcula la nueva posición Y
   };
 
   // Botones de zoom
-  const zoomIn = () => {    // Aumenta el zoom
+  const zoomIn = () => {
     const scaleBy = 1.1;
-    let newScale = Math.min(stageScale * scaleBy, 10);  // Limita el zoom máximo a 10
-    setStageScale(newScale);      // Actualiza el estado con la nueva escala
-    setStageX((900 - stageWidth * newScale) / 2 + offsetX * newScale);    // Calcula la nueva posición X
-    setStageY((600 - stageHeight * newScale) / 2 + offsetY * newScale);   // Calcula la nueva posición Y
+    let newScale = Math.min(stageScale * scaleBy, 10);
+    setStageScale(newScale);
+    setStageX((viewportWidth - stageWidth * newScale) / 2 + offsetX * newScale);
+    setStageY((viewportHeight - stageHeight * newScale) / 2 + offsetY * newScale);
   };
 
-  const zoomOut = () => {     // Disminuye el zoom
+  const zoomOut = () => {
     const scaleBy = 1.1;
-    let newScale = Math.max(stageScale / scaleBy, 0.05);    // Limita el zoom mínimo a 0.05
+    let newScale = Math.max(stageScale / scaleBy, 0.05);
     setStageScale(newScale);
-    setStageX((900 - stageWidth * newScale) / 2 + offsetX * newScale);    // Calcula la nueva posición X
-    setStageY((600 - stageHeight * newScale) / 2 + offsetY * newScale);   // Calcula la nueva posición Y
-  };
+    setStageX((viewportWidth - stageWidth * newScale) / 2 + offsetX * newScale);
+    setStageY((viewportHeight - stageHeight * newScale) / 2 + offsetY * newScale);
+  }
 
   // Botón de centrar vista
   const centrarVista = () => {
-    setStageX((900 - stageWidth * stageScale) / 2 + offsetX * stageScale);      // Centra el stage en X
-    setStageY((600 - stageHeight * stageScale) / 2 + offsetY * stageScale);     // Centra el stage en Y
+    setStageX((viewportWidth - stageWidth * stageScale) / 2 + offsetX * stageScale);
+    setStageY((viewportHeight - stageHeight * stageScale) / 2 + offsetY * stageScale);
   };
 
   // --- PAN CON CLIC Y BARRA ESPACIADORA ---
   const handleMouseDown = (e) => {
-    if (!spacePressed) return;    // Solo permite pan si la barra espaciadora está presionada
+    if (e.button !== undefined && e.button !== 0) return;    // Solo permite pan si la barra espaciadora está presionada
     setIsPanning(true);         // Activa el modo de pan
     panStart.current = { x: e.clientX, y: e.clientY };      // Guarda la posición inicial del mouse
     stageStart.current = { x: stageX, y: stageY };          // Guarda la posición inicial del stage
@@ -212,10 +246,23 @@ export default function ComponenteEjesNodos() {
 
   const limpiarDatos = () => {
     if (window.confirm("¿Estás seguro de que quieres limpiar todos los datos?")) {
-      localStorage.removeItem("muros"); // Eliminar solo los datos de muros
-      localStorage.removeItem("ejesSecundarios"); // Eliminar solo los datos de ejes secundarios
-      setMuros([]); // Resetear el estado de muros
-      setEjesSecundarios([]); // Resetear el estado de ejes secundarios
+      localStorage.removeItem("muros");
+      localStorage.removeItem("ejesSecundarios");
+      localStorage.removeItem("ejesTerciarios");
+      localStorage.removeItem("suplementos");
+      localStorage.removeItem("cotas");
+      setAltura(220);
+      setAncho(200);
+      setLargo(150);
+      setNivel(niveles[0].value);
+      setEjesSecundarios([]);
+      setEjesTerciarios([]);
+      setSuplementos([]);
+      setMuros([]);
+      // **RESETEAR ZOOM Y CENTRAR INMEDIATAMENTE**
+      setStageScale(1);
+      setStageX((viewportWidth - stageWidth * 1) / 2 + offsetX * 1);
+      setStageY((viewportHeight - stageHeight * 1) / 2 + offsetY * 1);
     }
   };
 
@@ -231,15 +278,15 @@ export default function ComponenteEjesNodos() {
     const handleKeyUp = (e) => {
       if (e.code === "Space") setSpacePressed(false);   // Desactiva el pan al soltar la barra espaciadora
     };
-    window.addEventListener("keydown", handleKeyDown);    // Escucha el evento de tecla presionada
-    window.addEventListener("keyup", handleKeyUp);        // Escucha el evento de tecla soltada
+    window.addEventListener("keydown", handleKeyDown);    // Escucha el ejeVerticalento de tecla presionada
+    window.addEventListener("keyup", handleKeyUp);        // Escucha el ejeVerticalento de tecla soltada
     return () => {
       window.removeEventListener("keydown", handleKeyDown);   // Limpia el listener al desmontar el componente
       window.removeEventListener("keyup", handleKeyUp);     // Limpia el listener al desmontar el componente
     };
   }, []);             // Solo se ejecuta una vez al montar el componente
 
-  // Manejar eventos de mouse para pan
+  // Manejar ejeVerticalentos de mouse para pan
   useEffect(() => {
     if (isPanning) {      // Si está en modo pan, agrega los listeners de mouse
       window.addEventListener("mousemove", handleMouseMove);    // Actualiza la posición del lienzo al mover el mouse
@@ -259,9 +306,8 @@ export default function ComponenteEjesNodos() {
   useEffect(() => {
     centrarVista();
     // eslint-disable-next-line
-  }, [canvasWidth, canvasHeight, stageScale]);
-
-
+  }, [canvasWidth, canvasHeight, stageScale, nivel, ejesSecundarios.length, ejesTerciarios.length, suplementos.length]);
+ 
   // Renderiza el componente
   return (
     <div                              
@@ -370,7 +416,7 @@ export default function ComponenteEjesNodos() {
         margen={margen}
         canvasWidth={canvasWidth}
         canvasHeight={canvasHeight}
-        stageScale={stageScale}                   //se ingresa la escala del stage con respecto al zoom
+        stageScale={stageScale}
         stageX={stageX}
         stageY={stageY}
         handleWheel={handleWheel}
@@ -380,6 +426,11 @@ export default function ComponenteEjesNodos() {
         nodos={nodos}
         cotas={cotas}
         muros={muros}
+        ejesTerciarios={ejesTerciarios}
+        stageWidth={stageWidth}
+        stageHeight={stageHeight}
+        offsetX={offsetX}
+        offsetY={offsetY}
       />
 
       {/* Panel de cotas */}
@@ -394,8 +445,23 @@ export default function ComponenteEjesNodos() {
         margen={margen}
         ancho={ancho}
         largo={largo}
-        ejesV={ejesV}
-        ejesH={ejesH}
+        ejesVerticales={ejesVerticales}
+        ejesHorizontales={ejesHorizontales}
+      />
+
+      {/* Panel de suplementos */}
+      <PanelSuplemento
+        nodos={nodos}
+        suplementos={suplementos}
+        setSuplementos={setSuplementos}
+        ejesTerciarios={ejesTerciarios}
+        setEjesTerciarios={setEjesTerciarios}
+        ejeIzquierdo={ejeIzquierdo}
+        ejeSuperior={ejeSuperior}
+        ejeDerecho={ejederecho}
+        ejeInferior={ejeInferior}
+        escala={escala}
+        nivel={nivel}
       />
 
       {/* Panel de muros */}
@@ -410,8 +476,8 @@ export default function ComponenteEjesNodos() {
         margen={margen}
         ancho={ancho}
         largo={largo}
-        ejesV={ejesV}
-        ejesH={ejesH}
+        ejesVerticales={ejesVerticales}
+        ejesHorizontales={ejesHorizontales}
         altura={altura}
       />
       {/* Selector de orientación de nodos SOLO para 1 de 1 */}

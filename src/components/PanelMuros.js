@@ -13,27 +13,28 @@ const tiposMuros = [
 ];
 
 export default function PanelMuros({
-  nodos,  
-  muros,
-  setMuros,
-  escala,
-  orientacionesNodos,
-  nivel,
-  niveles = [
-    { value: "1 de 1", ancho: 12, alto: 20 },
-    { value: "1 de 2", ancho: 20, alto: 20 },
-    { value: "2 de 2", ancho: 20, alto: 20 },
-    { value: "1 de 3", ancho: 30, alto: 30 },
-    { value: "2 de 3", ancho: 30, alto: 30 },
-    { value: "3 de 3", ancho: 20, alto: 20 },
-  ],
-  margen,
-  ancho,
-  largo,
-  ejesV,
-  ejesH,
-  altura,
-}) {
+    nodos,  
+    muros,
+    setMuros,
+    escala,
+    orientacionesNodos,
+    nivel,
+    niveles = [
+      { value: "1 de 1", ancho: 12, alto: 20 },
+      { value: "1 de 2", ancho: 20, alto: 20 },
+      { value: "2 de 2", ancho: 20, alto: 20 },
+      { value: "1 de 3", ancho: 30, alto: 30 },
+      { value: "2 de 3", ancho: 30, alto: 30 },
+      { value: "3 de 3", ancho: 20, alto: 20 },
+    ],
+    margen,
+    ancho,
+    largo,
+    ejesV,
+    ejesH,
+    altura,
+  }) 
+{
 
     // Estados para las variables relacionadas con la interacción del lienzo
     const [spacePressed, setSpacePressed] = useState(false); // Indica si la tecla de espacio está presionada
@@ -258,20 +259,15 @@ export default function PanelMuros({
   }
 
   // Calcula la cota libre entre dos nodos (igual que en PanelCotas)
-  function calcularCotaLibre(nodoA, nodoB, nodoClaveA, nodoClaveB) {
-    const dimsA = getDimensionesNodo(nodoClaveA);
-    const dimsB = getDimensionesNodo(nodoClaveB);
+  function calcularVigaCimiento(nodoA, nodoB) {
+   
+    let x1 = nodoA.x;
+    let y1 = nodoA.y;
+    let x2 = nodoB.x;
+    let y2 = nodoB.y;
 
-    const distanciax = Math.abs(nodoA.x - nodoB.x);
-    const distanciay = Math.abs(nodoA.y - nodoB.y);
-    const esHorizontal = distanciax > distanciay;
-    const distancia = (esHorizontal ? distanciax : distanciay) / escala;
-
-    const ajusteA = ajuste(nodoA, dimsA,esHorizontal);
-    const ajusteB = ajuste(nodoB, dimsB,esHorizontal);
-
-    const libre = distancia - (ajusteA + ajusteB);
-    return Math.round(libre);
+    const longitud = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2))/2;
+    return longitud; // Retorna la distancia entre los nodos ejes patra cimientos y vigas
   }
 
   // Saber si ambos nodos están sobre ejes principales
@@ -295,15 +291,16 @@ export default function PanelMuros({
 
     if (nodoA === nodoB) return;
 
-    const cotaLibre = calcularCotaLibre(
+    const cimientoViga = calcularVigaCimiento(
       nodos[nodoA], nodos[nodoB], nodoA, nodoB
     );
-    console.log("Cota libre:", cotaLibre);
-    if (cotaLibre <= 0) {
+    console.log("Cota libre:", cimientoViga);
+
+    if (cimientoViga <= 0) {
       alert("La distancia libre entre los nodos debe ser mayor a 0 cm.");
       return;
     }
-  
+    
     const desplaz = esSobreEjePrincipal(nodoA, nodoB) ? 0 : desplazamiento;
     console.log("Desplazamiento:", desplaz);
 
@@ -316,60 +313,42 @@ export default function PanelMuros({
       desplaz
     );
 
+    const longitudMuro = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2))/2;
+   
+    console.log("Longitud del muro:", longitudMuro);
+
+    
+    // Datos comunes para todos los tipos de muro
+    const datosMuro = {
+      nodoA,
+      nodoB,
+      desplazamiento: desplaz,
+      cimientoViga,
+      longitudMuro,
+      x1, y1, x2, y2
+    };
+    
+    // Tipos de muro que requieren editor especial
+    const tiposEspeciales = {
+      ventana: setMostrarEditorVentana,
+      puerta: setMostrarEditorPuerta,
+      puertaventana: setMostrarEditorPuertaVentana
+    };
+
     if (tipoMuro === "entero"){
        // Si es muro normal, sigue igual:
-      setMuros([
+       setMuros([
         ...muros,
-        {
-          tipo: tipoMuro,
-          nodoA,
-          nodoB,
-          desplazamiento: desplaz,
-          cotaLibre,
-          x1, y1, x2, y2 // puntos listos para dibujar
-        },
+        { tipo: tipoMuro, ...datosMuro }
       ]);
-    }else if (tipoMuro === "ventana") {
-      // Abre el editor especial para muro ventana
+    } else if (tiposEspeciales[tipoMuro]) {
       setDatosPrevios({
-        nodoA,
-        nodoB,
-        desplazamiento: desplaz,
+        ...datosMuro,
         escala,
         margen,
-        cotaLibre,
-        altura,
-        x1, y1, x2, y2 // puntos listos para dibujar
+        altura
       });
-      setMostrarEditorVentana(true);
-      return;
-    }else if (tipoMuro === "puerta") {
-      // Abre el editor especial para muro puerta
-      setDatosPrevios({
-        nodoA,
-        nodoB,
-        desplazamiento: desplaz,
-        escala,
-        margen,
-        cotaLibre,
-        altura,
-        x1, y1, x2, y2 // puntos listos para dibujar
-      });
-      setMostrarEditorPuerta(true);
-      return;
-    }else if (tipoMuro === "puertaventana") {
-      // Abre el editor especial para muro puerta ventana
-      setDatosPrevios({
-        nodoA,
-        nodoB,
-        desplazamiento: desplaz,
-        escala,
-        margen,
-        cotaLibre,
-        altura,
-        x1, y1, x2, y2 // puntos listos para dibujar
-      });
-      setMostrarEditorPuertaVentana(true);
+      tiposEspeciales[tipoMuro](true);
       return;
     }
    

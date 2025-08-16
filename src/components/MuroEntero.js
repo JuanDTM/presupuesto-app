@@ -7,6 +7,7 @@ export default function MuroEntero({
   y1,
   x2,
   y2,
+  longitudMuro,
   seleccionado = false,
   onClick,
   ...props
@@ -16,9 +17,6 @@ export default function MuroEntero({
   const color_borde = "#FFFFFF";         //color negro
   const grosor =20;
   const grosorBorde = grosor + 4;
-  // Calcular la longitud del muro
-  const longitud = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2))/2;
-  
     // Inicializar las variables para la posición del texto
     let textoX, textoY;
 
@@ -63,7 +61,7 @@ export default function MuroEntero({
       <Text
         x={textoX } // Ajustar posición X según orientación
         y={textoY } // Ajustar posición Y según orientación
-        text={`${longitud} cm`} // Mostrar la longitud del muro
+        text={`${longitudMuro} cm`} // Mostrar la longitud del muro
         fontSize={16}
         fill="#FF0000" // Color del texto
         align="center"

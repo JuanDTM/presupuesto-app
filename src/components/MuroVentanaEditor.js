@@ -9,6 +9,8 @@ export default function MuroVentanaEditor({
   nodoA,
   nodoB,
   desplazamiento,
+  cimientoViga,
+  longitudMuro,
   escala,
   margen,
   altura,
@@ -51,14 +53,13 @@ export default function MuroVentanaEditor({
   const anchoTotal = sumaMuros + sumaVentanas;
 
   // Escala para que el muro siempre quepa en el canvas
-  // const escala = Math.min(1.5, 600 / cotaLibre);
+  // const escala = Math.min(1.5, 600 / longitudMuro);
   // const margen = 40;
 
   // Dimensiones del canvas
   // Calcular la longitud del muro
-  const cotaLibre = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2))/2;
-  console.log("cotaLibre:", cotaLibre);
-  const canvasWidth = Math.max(cotaLibre * escala + margen * 2, 1000);
+  console.log("longitudMuro:", longitudMuro);
+  const canvasWidth = Math.max(longitudMuro * escala + margen * 2, 1000);
   const canvasHeight = Math.max(altura * escala + margen * 2, 700);
 
   // Posiciones de los elementos
@@ -127,7 +128,7 @@ export default function MuroVentanaEditor({
     muro1 >= 0 &&
     muro2 >= 0 &&
     (numeroVentana === 1 || muro3 >= 0) &&
-    anchoTotal <= cotaLibre;
+    anchoTotal <= longitudMuro;
 
   return visible ? (
     <div style={{
@@ -142,7 +143,7 @@ export default function MuroVentanaEditor({
         <div style={{  minWidth: 320, marginRight: 48}}>
           <h2>Editor de Muro con Ventana</h2>
           <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>ancho ventana <input type="number" value={anchoVentana} min={1} max={cotaLibre} onChange={e => setAnchoVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+            <label>ancho ventana <input type="number" value={anchoVentana} min={1} max={longitudMuro} onChange={e => setAnchoVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
           </div>
           <div style={{ fontSize: 20, marginBottom: 8 }}>
             <label>alto ventana <input type="number" value={altoVentana} min={1} max={altura} onChange={e => setAltoVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
@@ -151,18 +152,18 @@ export default function MuroVentanaEditor({
             <label>numero ventana <input type="number" value={numeroVentana} min={1} max={2} onChange={e => setNumeroVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
           </div>
           <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro1 <input type="number" value={muro1} min={0} max={cotaLibre} onChange={e => setMuro1(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+            <label>muro1 <input type="number" value={muro1} min={0} max={longitudMuro} onChange={e => setMuro1(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
           </div>
           <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro2 <input type="number" value={muro2} min={0} max={cotaLibre} onChange={e => setMuro2(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+            <label>muro2 <input type="number" value={muro2} min={0} max={longitudMuro} onChange={e => setMuro2(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
           </div>
           {numeroVentana === 2 && (
             <div style={{ fontSize: 20, marginBottom: 8 }}>
-              <label>muro 3 <input type="number" value={muro3} min={0} max={cotaLibre} onChange={e => setMuro3(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+              <label>muro 3 <input type="number" value={muro3} min={0} max={longitudMuro} onChange={e => setMuro3(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
             </div>
           )}
-          <div style={{ color: anchoTotal > cotaLibre ? "red" : "#222", fontWeight: "bold", marginBottom: 12 }}>
-            Total: {anchoTotal} cm / {cotaLibre} cm
+          <div style={{ color: anchoTotal > longitudMuro ? "red" : "#222", fontWeight: "bold", marginBottom: 12 }}>
+            Total: {anchoTotal} cm / {longitudMuro} cm
           </div>
           <div>Altura actual: {altura}</div>
           <button
@@ -181,6 +182,8 @@ export default function MuroVentanaEditor({
                 nodoA,
                 nodoB,
                 desplazamiento,
+                cimientoViga,
+                longitudMuro,
                 escala,
                 margen,
                 x1,
@@ -192,7 +195,7 @@ export default function MuroVentanaEditor({
               console.log("Datos enviados:", datos);
               onSave(datos);
             }}
-            disabled={anchoTotal > cotaLibre}
+            disabled={anchoTotal > longitudMuro}
           >aceptar</button>
           <button onClick={onClose} style={{ marginLeft: 16, fontSize: 20 }}>Cancelar</button>
         </div>
@@ -208,9 +211,9 @@ export default function MuroVentanaEditor({
             <Layer>
               {/* Muro exterior */}
               <Rect
-                x={(canvasWidth - cotaLibre * escala) / 2} // Centrar horizontalmente
+                x={(canvasWidth - longitudMuro * escala) / 2} // Centrar horizontalmente
                 y={(canvasHeight - altura * escala) / 2}  // Centrar verticalmente
-                width={cotaLibre * escala}
+                width={longitudMuro * escala}
                 height={altura * escala}
                 stroke="#00f"
                 strokeWidth={3}
@@ -219,7 +222,7 @@ export default function MuroVentanaEditor({
               {segmentos.map((seg, i) => (
                 <Rect
                   key={i}
-                  x={(canvasWidth - cotaLibre * escala) / 2 + seg.x - margen} // Relativo al muro exterior
+                  x={(canvasWidth - longitudMuro * escala) / 2 + seg.x - margen} // Relativo al muro exterior
                   y={(canvasHeight - altura * escala) / 2 }
                   width={seg.w}
                   height={seg.isVentana ? altoVentana * escala : altura * escala} // Altura específica para ventanas
@@ -232,7 +235,7 @@ export default function MuroVentanaEditor({
               {segmentos.map((seg, i) => (
                 <Text
                   key={i}
-                  x={(canvasWidth - cotaLibre * escala) / 2 + seg.x -margen+seg.w / 2 - 30} // Relativo al muro exterior
+                  x={(canvasWidth - longitudMuro * escala) / 2 + seg.x -margen+seg.w / 2 - 30} // Relativo al muro exterior
                   y={(canvasHeight - altura * escala) / 2 + 10} // Relativo al muro exterior
                   text={seg.label}
                   fontSize={24}
@@ -242,7 +245,7 @@ export default function MuroVentanaEditor({
               ))}
               {/* Altura */}
               <Text
-                x={(canvasWidth - cotaLibre * escala) / 2 - 80} // Relativo al muro exterior
+                x={(canvasWidth - longitudMuro * escala) / 2 - 80} // Relativo al muro exterior
                 y={(canvasHeight - altura * escala) / 2 + (altura * escala) / 2 - 20} // Relativo al muro exterior
                 text={`${altura}cm`}
                 fontSize={28}
@@ -251,9 +254,9 @@ export default function MuroVentanaEditor({
               />
               {/* Ancho total */}
               <Text
-                x={(canvasWidth - cotaLibre * escala) / 2 + (cotaLibre * escala) / 2 - 60} // Relativo al muro exterior
+                x={(canvasWidth - longitudMuro * escala) / 2 + (longitudMuro * escala) / 2 - 60} // Relativo al muro exterior
                 y={(canvasHeight - altura * escala) / 2 + altura * escala + 10} // Relativo al muro exterior
-                text={`${cotaLibre} cm`}
+                text={`${longitudMuro} cm`}
                 fontSize={32}
                 fill="#0f0"
                 fontStyle="bold"
