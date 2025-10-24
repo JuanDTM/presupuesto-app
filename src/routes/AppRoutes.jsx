@@ -7,6 +7,7 @@ import RegisterForm from '../modules/auth/components/RegisterForm';
 import RecoverPassword from '../modules/auth/components/RecoverPassword';
 import LogoutButton from '../modules/auth/components/LogoutButton';
 import ComponenteEjesNodos from '../components/ComponenteEjesNodos';
+import styles from './AppRoutes.module.css';
 
 export default function AppRoutes() {
   return (
@@ -19,11 +20,18 @@ export default function AppRoutes() {
         path="/"
         element={
           <ProtectedRoute>
-            <div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <h1>Demo de plano con React Konva</h1>
-                <LogoutButton />
-              </div>
+            <div className={styles.mainLayout}>
+              <header className={styles.header}>
+                <div className={styles.headerContent}>
+                  <h1 className={styles.title}>
+                    <span className={styles.titleIcon}>📐</span>
+                    Editor de Planos y Presupuestos
+                  </h1>
+                  <div className={styles.headerActions}>
+                    <LogoutButton />
+                  </div>
+                </div>
+              </header>
               <ComponenteEjesNodos />
             </div>
           </ProtectedRoute>

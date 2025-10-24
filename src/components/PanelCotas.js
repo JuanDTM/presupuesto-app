@@ -1,5 +1,6 @@
 // PanelCotas.js
 import React, { useState } from "react";
+import styles from "./PanelCotas.module.css";
 
 /**
  * Panel para agregar y mostrar cotas entre nodos.
@@ -175,48 +176,56 @@ export default function PanelCotas({
   }
 
   return (
-    <div style={{ marginBottom: 16, width: "100%" }}>
-      <b>Acotar:</b>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Acotar</h2>
       <form
         onSubmit={e => {
           e.preventDefault();
           agregarCota();
         }}
-        style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}
+        className={styles.form}
       >
-        <label>
-          Nodo A:
+        <div className={styles.inputGroup}>
+          <label>Nodo A</label>
           <select value={nodoA} onChange={e => setNodoA(Number(e.target.value))}>
             {nodos.map((_, idx) => (
               <option key={idx} value={idx}>{`N${idx + 1}`}</option>
             ))}
           </select>
-        </label>
-        <label>
-          Nodo B:
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Nodo B</label>
           <select value={nodoB} onChange={e => setNodoB(Number(e.target.value))}>
             {nodos.map((_, idx) => (
               <option key={idx} value={idx}>{`N${idx + 1}`}</option>
             ))}
           </select>
-        </label>
-        <label>
-          Tipo:
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Tipo</label>
           <select value={tipoCota} onChange={e => setTipoCota(e.target.value)}>
             <option value="libre">Libre</option>
             <option value="eje">Eje a eje</option>
           </select>
-        </label>
-        <button type="submit">Agregar cota</button>
+        </div>
+        <button type="submit" className={styles.btnAgregar}>Agregar cota</button>
       </form>
-      <ul>
-        {cotas.map((c, i) => (
-          <li key={i}>
-            N{c.nodoA + 1} a N{c.nodoB + 1} ({c.tipo}) = <b>{c.valor} cm</b>
-            <button onClick={() => eliminarCota(i)} style={{ marginLeft: 8 }}>Eliminar</button>
-          </li>
-        ))}
-      </ul>
+      {cotas && cotas.length > 0 ? (
+        <ul className={styles.lista}>
+          {cotas.map((c, i) => (
+            <li key={i} className={styles.cotaItem}>
+              <div className={styles.cotaInfo}>
+                N{c.nodoA + 1} a N{c.nodoB + 1} ({c.tipo}) = <b>{c.valor} cm</b>
+              </div>
+              <button onClick={() => eliminarCota(i)} className={styles.btnEliminar}>
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.emptyMessage}>No hay cotas agregadas</p>
+      )}
     </div>
   );
 }

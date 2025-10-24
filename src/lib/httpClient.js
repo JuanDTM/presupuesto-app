@@ -49,4 +49,10 @@ export async function request(path, { method = 'GET', body, auth = false } = {})
   return data;
 }
 
-
+// Métodos de conveniencia
+export const httpClient = {
+  get: (path, options) => request(path, { ...options, method: 'GET' }),
+  post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
+  put: (path, body, options) => request(path, { ...options, method: 'PUT', body }),
+  delete: (path, options) => request(path, { ...options, method: 'DELETE' }),
+};

@@ -1,0 +1,284 @@
+/* PanelMuros.module.css */
+
+.container {
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 1400px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e65100;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title::before {
+  content: "🧱";
+  font-size: 20px;
+}
+
+.form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputGroup label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.inputGroup select {
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  min-width: 140px;
+}
+
+.inputGroup select:hover {
+  border-color: #e65100;
+}
+
+.inputGroup select:focus {
+  outline: none;
+  border-color: #e65100;
+  box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.1);
+}
+
+.btnAgregar {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(230, 81, 0, 0.3);
+  align-self: flex-end;
+}
+
+.btnAgregar:hover {
+  background: linear-gradient(135deg, #e65100 0%, #bf360c 100%);
+  box-shadow: 0 4px 8px rgba(230, 81, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.btnAgregar:active {
+  transform: translateY(0);
+}
+
+.lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.muroItem {
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 4px solid #ff9800;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.muroItem:hover {
+  background: linear-gradient(135deg, #ffe0b2 0%, #fff3e0 100%);
+  border-left-color: #e65100;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.muroInfo {
+  flex: 1;
+  min-width: 200px;
+}
+
+.muroTipo {
+  color: #e65100;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.muroDetalles {
+  color: #666;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.muroAcciones {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inputDesplazamiento {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inputDesplazamiento label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+}
+
+.inputDesplazamiento input {
+  padding: 6px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  width: 80px;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
+}
+
+.inputDesplazamiento input:hover {
+  border-color: #ff9800;
+}
+
+.inputDesplazamiento input:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+}
+
+.btnModificar {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.btnModificar:hover {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+  transform: translateY(-1px);
+}
+
+.btnModificar:active {
+  transform: translateY(0);
+}
+
+.btnEliminar {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+}
+
+.btnEliminar:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.4);
+  transform: translateY(-1px);
+}
+
+.btnEliminar:active {
+  transform: translateY(0);
+}
+
+.emptyMessage {
+  text-align: center;
+  color: #999;
+  padding: 24px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inputGroup select {
+    width: 100%;
+  }
+
+  .btnAgregar {
+    width: 100%;
+  }
+
+  .muroItem {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .muroAcciones {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .btnModificar,
+  .btnEliminar {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .muroAcciones {
+    flex-direction: column;
+  }
+
+  .inputDesplazamiento input {
+    width: 100%;
+  }
+}
+

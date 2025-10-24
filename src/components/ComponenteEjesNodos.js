@@ -3,6 +3,8 @@ import React, { useRef, useEffect, useState } from "react";
 import LienzoEjesNodos from "./LienzoEjesNodos";
 import PanelCotas, { calcularCota } from "./PanelCotas"; // Importa la función
 import PanelMuros from "./PanelMuros";
+import CotizadorMuros from "../modules/quote/components/CotizadorMuros";
+import styles from "./ComponenteEjesNodos.module.css";
 
 // Hook personalizado para localStorage
 function useLocalStorage(key, defaultValue) {
@@ -264,98 +266,83 @@ export default function ComponenteEjesNodos() {
 
   // Renderiza el componente
   return (
-    <div                              
-      style={{
-        width: "100vw",                   // Ancho completo de la ventana, 100vw se refiere al 100% del ancho de la ventana
-        minHeight: "100vh",               // largo mínimo de la ventana, 100vh se refiere al 100% del largo de la ventana
-        display: "flex",                    // Muestra el contenido en flexbox
-        flexDirection: "column",          // Dirección de los elementos en columna
-        alignItems: "center",             // Alinea los elementos al centro horizontalmente
-        justifyContent: "flex-start",     // Alinea los elementos al inicio verticalmente
-        background: "#f5f5f5",            // Color de fondo claro, se coloca un color gris claro predefinido
-        padding: 24                       // Espacio interno de 24px alrededor del contenido
-      }}
-    >
-      {/* Controles arriba */}
-      <div style={{ display: "flex", gap: 24, marginBottom: 16, flexWrap: "wrap" }}>      { /* Controles para agregar ejes secundarios, muros y zoom */}
-        <label>
-          Ancho (cm):{" "}        {/*se define el ancho del diseño en cm*/}
+    <div className={styles.container}>
+      {/* Controles principales */}
+      <div className={styles.controlesSuperiores}>
+        <div className={styles.inputGroup}>
+          <label>Ancho (cm)</label>
           <input
             type="number"
             value={ancho}
             min={100}               
             max={1000}
             onChange={e => setAncho(Number(e.target.value))}
-            style={{ width: 80 }}
           />
-        </label>
-        <label>
-          Largo (cm):{" "}
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Largo (cm)</label>
           <input
             type="number"
             value={largo}
             min={100}
             max={1000}
             onChange={e => setLargo(Number(e.target.value))}
-            style={{ width: 80 }}
           />
-        </label>
-        <label>
-          Alto (cm):{" "}
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Alto (cm)</label>
           <input
             type="number"
             value={altura}
             min={100}
             max={350}
             onChange={e => setAltura(Number(e.target.value))}
-            style={{ width: 80 }}
           />
-        </label>
-        <label>
-          Nivel:{" "}
-          <select value={nivel} onChange={e => { setNivel(e.target.value); setOrientacionesNodos({}); }}>     { /* Selector de nivel, al cambiar se resetea la orientación de nodos */ }
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Nivel</label>
+          <select value={nivel} onChange={e => { setNivel(e.target.value); setOrientacionesNodos({}); }}>
             {niveles.map(n => (
               <option key={n.value} value={n.value}>
                 {n.value}
               </option>
             ))}
           </select>
-        </label>
-        <button onClick={zoomIn}>Zoom +</button>
-        <button onClick={zoomOut}>Zoom -</button>
-        <button onClick={centrarVista}>Centrar vista</button>
-        <button onClick={limpiarDatos} style={{ backgroundColor: "#ff4444", color: "white" }}>
+        </div>
+        <button onClick={zoomIn} className={styles.btnPrimary}>Zoom +</button>
+        <button onClick={zoomOut} className={styles.btnPrimary}>Zoom -</button>
+        <button onClick={centrarVista} className={styles.btnPrimary}>Centrar vista</button>
+        <button onClick={limpiarDatos} className={styles.btnDanger}>
           Limpiar datos
         </button>
-        
       </div>
 
-      <div style={{ display: "flex", gap: 24, marginBottom: 16, flexWrap: "wrap" }}>
-        <label>
-          Eje secundario:{" "}
+      {/* Controles de ejes secundarios */}
+      <div className={styles.controlesSecundarios}>
+        <div className={styles.inputGroup}>
+          <label>Eje secundario</label>
           <select value={orientacion} onChange={e => setOrientacion(e.target.value)}>
             <option value="V">Vertical</option>
             <option value="H">Horizontal</option>
           </select>
-        </label>
-        <label>
-          Distancia (cm):{" "}
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Distancia (cm)</label>
           <input
             type="number"
             value={distancia}
             min={1}
             max={orientacion === "V" ? ancho - 1 : largo - 1}
             onChange={e => setDistancia(Number(e.target.value))}
-            style={{ width: 80 }}
           />
-        </label>
-        <button onClick={agregarEje}>Agregar eje</button>
-        <button onClick={deshacerEje} disabled={ejesSecundarios.length === 0}>
+        </div>
+        <button onClick={agregarEje} className={styles.btnPrimary}>Agregar eje</button>
+        <button onClick={deshacerEje} disabled={ejesSecundarios.length === 0} className={styles.btnPrimary}>
           Deshacer último eje
         </button>
-        <span style={{ color: "#888" }}>
-          <b>Zoom:</b> rueda del mouse &nbsp;|&nbsp; <b>Pan:</b> barra espaciadora + clic
-        </span>
+        <p className={styles.instrucciones}>
+          <b>Zoom:</b> rueda del mouse | <b>Pan:</b> barra espaciadora + clic
+        </p>
       </div>
           
       {/* Lienzo */}
@@ -414,14 +401,22 @@ export default function ComponenteEjesNodos() {
         ejesH={ejesH}
         altura={altura}
       />
+
+      {/* Cotizador de muros */}
+      <CotizadorMuros
+        muros={muros}
+        altura={altura}
+        nivel={nivel}
+      />
+
       {/* Selector de orientación de nodos SOLO para 1 de 1 */}
       {nivel === "1 de 1" && (
-        <div style={{ marginBottom: 16 }}>
-          <b>Orientación de nodos:</b>
+        <div className={styles.panelOrientacion}>
+          <b>Orientación de nodos</b>
           <ul>
             {nodos.map((n, idx) => (
               <li key={idx}>
-                Nodo {idx + 1}:{" "}
+                Nodo {idx + 1}:
                 <select
                   value={orientacionesNodos[idx] || "horizontal"}
                   onChange={e => handleOrientacionNodo(idx, e.target.value)}
@@ -436,8 +431,8 @@ export default function ComponenteEjesNodos() {
       )}
 
       {/* Lista de ejes secundarios */}
-      <div style={{ width: 900, marginBottom: 16 }}>
-        <b>Ejes secundarios:</b>
+      <div className={styles.listaEjes}>
+        <b>Ejes secundarios</b>
         <ul>
           {ejesSecundarios.map((e, i) => (
             <li key={i}>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import MuroVentanaEditor from "./MuroVentanaEditor"; // tu editor modal
 import MuroPuertaEditor from "./MuroPuertaEditor"; // tu editor modal
 import MuroPuertaVentanaEditor from "./MuroPuertaVentanaEditor"; // tu editor modal para puerta ventana
+import styles from "./PanelMuros.module.css";
 
 //tipo de muros
 const tiposMuros = [
@@ -463,37 +464,37 @@ export default function PanelMuros({
   }
 
   return (
-    <div style={{ marginodoBottom: 16, width: "100%" }}>
-      <b>Agregar muro:</b>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Agregar muro</h2>
       <form
         onSubmit={onSubmitAgregarMuro}
-        style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}
+        className={styles.form}
       >
-        <label>
-          Tipo:
+        <div className={styles.inputGroup}>
+          <label>Tipo</label>
           <select value={tipoMuro} onChange={e => setTipoMuro(e.target.value)}>
             {tiposMuros.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
-        </label>
-        <label>
-          Nodo A:
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Nodo A</label>
           <select value={nodoA} onChange={e => setNodoA(Number(e.target.value))}>
             {nodos.map((_, nodoClave) => (
               <option key={nodoClave} value={nodoClave}>{`N${nodoClave + 1}`}</option>
             ))}
           </select>
-        </label>
-        <label>
-          Nodo B:
+        </div>
+        <div className={styles.inputGroup}>
+          <label>Nodo B</label>
           <select value={nodoB} onChange={e => setNodoB(Number(e.target.value))}>
             {nodos.map((_, nodoClave) => (
               <option key={nodoClave} value={nodoClave}>{`N${nodoClave + 1}`}</option>
             ))}
           </select>
-        </label>
-        <button type="submit">Agregar muro</button>
+        </div>
+        <button type="submit" className={styles.btnAgregar}>Agregar muro</button>
       </form>
       {/* Editor de muro ventana */}
       {mostrarEditorVentana && (
@@ -553,50 +554,63 @@ export default function PanelMuros({
           handleWheel={handleWheel}   // Pasar handleWheel como prop
         />
       )}
-      <ul>
-      {muros.map((m, i) => {
-        const desplazar = esSobreEjePrincipal(m.nodoA, m.nodoB);
-        return (
-          <li key={i}>
-            {m.tipo} de N{m.nodoA + 1} a N{m.nodoB + 1}
-            {m.desplazamiento !== 0 && ` - Desplazado: ${m.desplazamiento} cm  `}
-            
-            {/* Mostrar opción de desplazamiento si no está sobre los ejes principales */}
-            {!desplazar && (
-                <label>
-                  Mover:
-                  <input
-                    type="number"
-                    value={m.desplazamiento}
-                    onChange={(e) => {
-                      const nuevoDesplazamiento = parseInt(e.target.value, 10) || 0;
-                      const nuevosMuros = [...muros];
-                      nuevosMuros[i].desplazamiento = nuevoDesplazamiento;
+      {muros && muros.length > 0 ? (
+        <ul className={styles.lista}>
+          {muros.map((m, i) => {
+            const desplazar = esSobreEjePrincipal(m.nodoA, m.nodoB);
+            return (
+              <li key={i} className={styles.muroItem}>
+                <div className={styles.muroInfo}>
+                  <div className={styles.muroTipo}>{m.tipo}</div>
+                  <div className={styles.muroDetalles}>
+                    Nodos: N{m.nodoA + 1} → N{m.nodoB + 1}
+                    {m.desplazamiento !== 0 && ` | Desplazado: ${m.desplazamiento} cm`}
+                  </div>
+                </div>
+                <div className={styles.muroAcciones}>
+                  {/* Mostrar opción de desplazamiento si no está sobre los ejes principales */}
+                  {!desplazar && (
+                    <div className={styles.inputDesplazamiento}>
+                      <label>Mover (cm)</label>
+                      <input
+                        type="number"
+                        value={m.desplazamiento}
+                        onChange={(e) => {
+                          const nuevoDesplazamiento = parseInt(e.target.value, 10) || 0;
+                          const nuevosMuros = [...muros];
+                          nuevosMuros[i].desplazamiento = nuevoDesplazamiento;
 
-                      // Recalcular las coordenadas del muro según su orientación
-                      const esHorizontal = nodos[m.nodoA].y === nodos[m.nodoB].y; // Verificar si el muro es horizontal
-                      if (esHorizontal) {
-                        // Si el muro es horizontal, el desplazamiento afecta las coordenadas Y
-                        nuevosMuros[i].y1 = m.y1 + nuevoDesplazamiento;
-                        nuevosMuros[i].y2 = m.y2 + nuevoDesplazamiento;
-                      } else {
-                        // Si el muro es vertical, el desplazamiento afecta las coordenadas X
-                        nuevosMuros[i].x1 = m.x1 + nuevoDesplazamiento;
-                        nuevosMuros[i].x2 = m.x2 + nuevoDesplazamiento;
-                      }
+                          // Recalcular las coordenadas del muro según su orientación
+                          const esHorizontal = nodos[m.nodoA].y === nodos[m.nodoB].y;
+                          if (esHorizontal) {
+                            nuevosMuros[i].y1 = m.y1 + nuevoDesplazamiento;
+                            nuevosMuros[i].y2 = m.y2 + nuevoDesplazamiento;
+                          } else {
+                            nuevosMuros[i].x1 = m.x1 + nuevoDesplazamiento;
+                            nuevosMuros[i].x2 = m.x2 + nuevoDesplazamiento;
+                          }
 
-                      setMuros(nuevosMuros); // Actualizar el estado de los muros
-                    }}
-                    style={{ marginLeft: 8, width: 80 }}
-                  />
-                </label>
-            )}
-            <button onClick = {()=>modificarMuro(i)} style={{ marginLeft: 8 }} hidden={m.tipo === "entero"}>Modificar</button>
-            <button onClick={() => eliminodoarMuro(i)} style={{ marginLeft: 8 }}>Eliminar-Muro</button>
-          </li>
-        );
-      })}
-            </ul>
+                          setMuros(nuevosMuros);
+                        }}
+                      />
+                    </div>
+                  )}
+                  {m.tipo !== "entero" && (
+                    <button onClick={() => modificarMuro(i)} className={styles.btnModificar}>
+                      Modificar
+                    </button>
+                  )}
+                  <button onClick={() => eliminodoarMuro(i)} className={styles.btnEliminar}>
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className={styles.emptyMessage}>No hay muros creados</p>
+      )}
     </div>
   );
 }
