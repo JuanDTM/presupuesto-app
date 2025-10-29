@@ -1,6 +1,8 @@
 // CotizadorMuros.js
 import React, { useState } from "react";
 import { httpClient } from "../../../lib/httpClient";
+import { pdf } from '@react-pdf/renderer';
+import CotizacionPDF from './CotizacionPDF';
 import styles from "./CotizadorMuros.module.css";
 
 /**
@@ -213,6 +215,37 @@ export default function CotizadorMuros({ muros, altura, nivel }) {
    */
   const actualizarParametro = (key, value) => {
     setParams({ ...params, [key]: parseInt(value) });
+  };
+
+  /**
+   * Genera y descarga el PDF de la cotización
+   */
+  const descargarPDF = async () => {
+    if (!cotizacion || !muroSeleccionado) {
+      setError("No hay cotización disponible para descargar");
+      return;
+    }
+
+    try {
+      // Generar el PDF
+      const blob = await pdf(<CotizacionPDF 
+        cotizacion={cotizacion} 
+        muroSeleccionado={muroSeleccionado} 
+      />).toBlob();
+
+      // Crear URL temporal y descargar
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cotizacion-muro-${muroSeleccionado.index + 1}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+      setError("Error al generar el PDF");
+    }
   };
 
   return (
@@ -436,6 +469,15 @@ export default function CotizadorMuros({ muros, altura, nivel }) {
               >
                 {cargando ? "Cotizando..." : "Obtener Cotización"}
               </button>
+              {cotizacion && (
+                <button
+                  onClick={descargarPDF}
+                  className={styles.btnDescargar}
+                  title="Descargar cotización en PDF"
+                >
+                  📄 Descargar PDF
+                </button>
+              )}
               <button onClick={cerrarModal} className={styles.btnSecundario}>
                 Cerrar
               </button>

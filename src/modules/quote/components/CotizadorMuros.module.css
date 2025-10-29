@@ -257,6 +257,34 @@
   background: #616161;
 }
 
+.btnDescargar {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(255, 152, 0, 0.3);
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btnDescargar:hover {
+  background: linear-gradient(135deg, #f57c00 0%, #ef6c00 100%);
+  box-shadow: 0 5px 12px rgba(255, 152, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.btnDescargar:active {
+  transform: translateY(0);
+}
+
 /* Mensajes */
 .errorContainer {
   padding: 16px 20px;
@@ -393,7 +421,8 @@
   }
 
   .btnPrimario,
-  .btnSecundario {
+  .btnSecundario,
+  .btnDescargar {
     width: 100%;
     min-width: auto;
   }
