@@ -1,9 +1,10 @@
 // CotizadorMuros.js
 import React, { useState } from "react";
-import { httpClient } from "../../../lib/httpClient";
+import { request } from "../../../lib/httpClient";
 import { pdf } from '@react-pdf/renderer';
 import CotizacionPDF from './CotizacionPDF';
 import styles from "./CotizadorMuros.module.css";
+import apiUrls from "../../../config/api_urls";
 
 /**
  * Componente para cotizar muros creados
@@ -177,7 +178,7 @@ export default function CotizadorMuros({ muros, altura, nivel }) {
         throw new Error('El alto del muro debe ser un número válido');
       }
 
-      const response = await httpClient.post('/cotizacion-muro', payload);
+      const response = await request(apiUrls.cotizacion.cotizarMuro, { method: 'POST', body: payload });
 
       setCotizacion(response);
       console.log("=== Cotización recibida exitosamente ===");

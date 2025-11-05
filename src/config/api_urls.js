@@ -6,6 +6,11 @@ const apiUrls = {
     logout: '/logout',
     preguntaSeguridad: '/pregunta-seguridad',
     recuperarPassword: '/recuperar-password'
+  },
+  cotizacion: {
+    cotizarMuro: '/cotizacion-muro',
+    cotizarPiso: '/cotizacion-piso',
+    cotizarCielo: '/cotizacion-cielo'
   }
 };
 

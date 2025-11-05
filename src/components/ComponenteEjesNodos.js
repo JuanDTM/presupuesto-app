@@ -4,6 +4,8 @@ import LienzoEjesNodos from "./LienzoEjesNodos";
 import PanelCotas, { calcularCota } from "./PanelCotas"; // Importa la función
 import PanelMuros from "./PanelMuros";
 import CotizadorMuros from "../modules/quote/components/CotizadorMuros";
+import CotizadorPiso from "../modules/quote/components/CotizadorPiso";
+import CotizadorCieloRaso from "../modules/quote/components/CotizadorCieloRaso";
 import styles from "./ComponenteEjesNodos.module.css";
 
 // Hook personalizado para localStorage
@@ -408,6 +410,12 @@ export default function ComponenteEjesNodos() {
         altura={altura}
         nivel={nivel}
       />
+
+      {/* Cotizador de pisos */}
+      <CotizadorPiso largo={largo} ancho={ancho} />
+
+      {/* Cotizador de cielo raso */}
+      <CotizadorCieloRaso largo={largo} ancho={ancho} />
 
       {/* Selector de orientación de nodos SOLO para 1 de 1 */}
       {nivel === "1 de 1" && (
