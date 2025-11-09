@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ReformasModal.css";
 import MurosModal from "./MurosModal";
 import PisosModal from "./PisosModal";
+import CieloRasoModal from "./CieloRasoModal";
 
 export default function ReformasModal({ visible, onClose }) {
   const [opcionSeleccionada, setOpcionSeleccionada] = useState(null);
@@ -21,7 +22,7 @@ export default function ReformasModal({ visible, onClose }) {
                 <li onClick={() => setOpcionSeleccionada("MUROS")}>MUROS</li>
                 <li onClick={() => setOpcionSeleccionada("PISOS")}>PISOS</li>
                 <li>CUBIERTA</li>
-                <li>CIELO RASO</li>
+                <li onClick={() => setOpcionSeleccionada("CIELO RASO")}>CIELO RASO</li>
                 <li>VIGAS</li>
                 <li>COLUMNAS</li>
                 <li>CIMIENTOS</li>
@@ -40,6 +41,13 @@ export default function ReformasModal({ visible, onClose }) {
 
         {opcionSeleccionada === "PISOS" && (
           <PisosModal
+            onClose={onClose}
+            onVolver={() => setOpcionSeleccionada(null)}
+          />
+        )}
+
+        {opcionSeleccionada === "CIELO RASO" && (
+          <CieloRasoModal
             onClose={onClose}
             onVolver={() => setOpcionSeleccionada(null)}
           />
