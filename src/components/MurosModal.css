@@ -1,0 +1,177 @@
+.formulario-muro {
+    padding: 20px;
+  }
+  
+  .formulario-muro h2 {
+    color: #d32f2f;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .formulario-muro label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
+  
+  .formulario-muro input[type="number"],
+  .formulario-muro select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+  
+  .formulario-muro input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+  }
+  
+  .grid-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .btn-editor {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 20px;
+    transition: background 0.3s;
+  }
+  
+  .btn-editor:hover {
+    background: #1976d2;
+  }
+  
+  .acciones {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .btn-aceptar {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+  }
+  
+  .btn-aceptar:hover {
+    background: #45a049;
+  }
+  
+  .btn-volver {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+  }
+  
+  .btn-volver:hover {
+    background: #fb8c00;
+  }
+  
+  .btn-cerrar {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+  }
+  
+  .btn-cerrar:hover {
+    background: #e53935;
+  }
+  
+  .cotizacion-resultado {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .cotizacion-resultado h2 {
+    color: #4caf50;
+    margin-bottom: 20px;
+  }
+  
+  .mano-obra {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: left;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 14px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    border: 2px solid #ddd;
+  }
+  
+  .resumen {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 2px solid #2196f3;
+  }
+  
+  .resumen p {
+    margin: 10px 0;
+    font-size: 16px;
+  }
+  
+  .resumen strong {
+    color: #1976d2;
+  }
+  
+  .btn-descargar {
+    background: #9c27b0;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+  }
+  
+  .btn-descargar:hover {
+    background: #7b1fa2;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .grid-form {
+      grid-template-columns: 1fr;
+    }
+  
+    .acciones {
+      flex-direction: column;
+    }
+  
+    .acciones button {
+      width: 100%;
+    }
+  }

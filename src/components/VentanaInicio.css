@@ -1,0 +1,88 @@
+.ventana-inicio {
+    border: 2px solid red;
+    text-align: center;
+    padding: 40px;
+    max-width: 800px;
+    margin: 60px auto;
+    background: #fff;
+    border-radius: 8px;
+  }
+  
+  .titulo {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: red;
+    border: 2px solid red;
+    display: inline-block;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+  }
+  
+  .descripcion {
+    border: 1px solid red;
+    padding: 14px;
+    color: #333;
+    text-align: justify;
+    margin-bottom: 20px;
+    background: #fff7f7;
+  }
+  
+  .botones {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  
+  .boton {
+    border: 2px solid red;
+    background: white;
+    color: red;
+    padding: 14px 28px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.3s;
+  }
+  
+  .boton:hover {
+    background: red;
+    color: white;
+  }
+  
+  .links-auth {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .link {
+    color: red;
+    font-weight: bold;
+    text-decoration: none;
+    border: 1px solid red;
+    padding: 6px 14px;
+    border-radius: 4px;
+  }
+  
+  .link:hover {
+    background: red;
+    color: white;
+  }
+  
+  .enlace-extra {
+    margin-top: 16px;
+  }
+  
+  .enlace-extra a {
+    color: #777;
+    text-decoration: none;
+  }
+  
+  .bienvenida {
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
