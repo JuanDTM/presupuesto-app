@@ -3,6 +3,9 @@ import "./ReformasModal.css";
 import MurosModal from "./MurosModal";
 import PisosModal from "./PisosModal";
 import CieloRasoModal from "./CieloRasoModal";
+import VigasModal from "./VigasModal";
+import ColumnasModal from "./ColumnasModal";
+import CimientosModal from "./CimientosModal";
 
 export default function ReformasModal({ visible, onClose }) {
   const [opcionSeleccionada, setOpcionSeleccionada] = useState(null);
@@ -23,9 +26,9 @@ export default function ReformasModal({ visible, onClose }) {
                 <li onClick={() => setOpcionSeleccionada("PISOS")}>PISOS</li>
                 <li>CUBIERTA</li>
                 <li onClick={() => setOpcionSeleccionada("CIELO RASO")}>CIELO RASO</li>
-                <li>VIGAS</li>
-                <li>COLUMNAS</li>
-                <li>CIMIENTOS</li>
+                <li onClick={() => setOpcionSeleccionada("VIGAS")}>VIGAS</li>
+                <li onClick={() => setOpcionSeleccionada("COLUMNAS")}>COLUMNAS</li>
+                <li onClick={() => setOpcionSeleccionada("CIMIENTOS")}>CIMIENTOS</li>
               </ul>
             </div>
             <button onClick={onClose} className="btn-cerrar">Cerrar</button>
@@ -48,6 +51,24 @@ export default function ReformasModal({ visible, onClose }) {
 
         {opcionSeleccionada === "CIELO RASO" && (
           <CieloRasoModal
+            onClose={onClose}
+            onVolver={() => setOpcionSeleccionada(null)}
+          />
+        )}
+        {opcionSeleccionada === "VIGAS" && (
+          <VigasModal
+            onClose={onClose}
+            onVolver={() => setOpcionSeleccionada(null)}
+          />
+        )}
+        {opcionSeleccionada === "COLUMNAS" && (
+          <ColumnasModal
+            onClose={onClose}
+            onVolver={() => setOpcionSeleccionada(null)}
+          />
+        )}
+        {opcionSeleccionada === "CIMIENTOS" && (
+          <CimientosModal
             onClose={onClose}
             onVolver={() => setOpcionSeleccionada(null)}
           />

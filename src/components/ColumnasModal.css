@@ -1,0 +1,267 @@
+.formulario-columnas {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .formulario-columnas h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .selector-ladrillo {
+    background: #e3f2fd;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 2px solid #2196f3;
+  }
+  
+  .selector-ladrillo label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #1565c0;
+  }
+  
+  .selector-ladrillo select {
+    margin-top: 10px;
+    padding: 10px;
+    border: 2px solid #2196f3;
+    border-radius: 5px;
+    font-size: 16px;
+    background: white;
+  }
+  
+  .seccion {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px solid #dee2e6;
+  }
+  
+  .seccion h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+  }
+  
+  .seccion h4 {
+    color: #6c757d;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .grid-form label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .grid-form input,
+  .grid-form select {
+    margin-top: 5px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .btn-agregar {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  
+  .btn-agregar:hover {
+    background: #218838;
+  }
+  
+  .lista-elementos {
+    margin-top: 20px;
+  }
+  
+  .lista-elementos table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .lista-elementos th {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  
+  .lista-elementos td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .lista-elementos tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .lista-elementos tr:hover {
+    background: #f8f9fa;
+  }
+  
+  .btn-eliminar {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+  }
+  
+  .btn-eliminar:hover {
+    background: #c82333;
+  }
+  
+  .acciones {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .btn-aceptar {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  
+  .btn-aceptar:hover {
+    background: #0056b3;
+  }
+  
+  .btn-volver {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  
+  .btn-volver:hover {
+    background: #5a6268;
+  }
+  
+  .cotizacion-resultado {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .cotizacion-resultado h2 {
+    color: #28a745;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .mano-obra {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .resumen {
+    background: #e7f3ff;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 20px 0;
+    border: 2px solid #007bff;
+  }
+  
+  .resumen p {
+    margin: 10px 0;
+    font-size: 16px;
+  }
+  
+  .resumen strong {
+    color: #0056b3;
+  }
+  
+  .btn-descargar {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  
+  .btn-descargar:hover {
+    background: #138496;
+  }
+  
+  .btn-cerrar {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.3s;
+  }
+  
+  .btn-cerrar:hover {
+    background: #c82333;
+  }
