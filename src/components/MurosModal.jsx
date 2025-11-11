@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MurosModal.css";
 import MuroPuertaEditor from "./MuroPuertaEditor";
 import MuroVentanaEditor from "./MuroVentanaEditor";
@@ -6,7 +6,6 @@ import MuroPuertaVentanaEditor from "./MuroPuertaVentanaEditor";
 
 export default function MurosModal({ onClose, onVolver }) {
   const [muroDatos, setMuroDatos] = useState({
-    // Campos generales del muro
     cinta_corona: 1,
     viga_cimiento: 1,
     cinta_lateral: 1,
@@ -18,8 +17,6 @@ export default function MurosModal({ onClose, onVolver }) {
     mamposteria: 1,
     ladrillo: 4,
     tipo: 2,
-    
-    // Datos del muro
     muro: {
       tipo: "muroEntero",
       piso: "1 de 1",
@@ -37,8 +34,128 @@ export default function MurosModal({ onClose, onVolver }) {
 
   const [mostrarEditor, setMostrarEditor] = useState(false);
   const [cotizacion, setCotizacion] = useState(null);
+  const [stageScale, setStageScale] = useState(1);
+
+  // Props para los editores
+  const propsEditor = {
+    visible: mostrarEditor,
+    onClose: () => setMostrarEditor(false),
+    onSave: (datos) => {
+      console.log("📥 Datos recibidos del editor:", datos);
+      
+      let nuevoMuro = { ...muroDatos.muro };
+
+      // Mapear según el tipo de muro
+      if (datos.tipo === "puerta") {
+        // Muro con Puerta
+        nuevoMuro.medida1 = datos.muro1 || 0;
+        nuevoMuro.medida2 = datos.anchoPuerta || 0;
+        nuevoMuro.medida3 = datos.muro2 || 0;
+        nuevoMuro.ventana = null;
+        
+      } else if (datos.tipo === "ventana") {
+        // Muro con Ventana
+        nuevoMuro.medida1 = datos.muro1 || 0;
+        nuevoMuro.medida2 = 0; // En muro ventana, medida2 es 0 o el muro2 si hay 2 ventanas
+        nuevoMuro.medida3 = datos.muro2 || 0;
+        
+        // Construir objeto ventana según la API
+        nuevoMuro.ventana = {
+          tipo: datos.numeroVentana === 2 ? "ventanal" : "ventana",
+          ancho: datos.anchoVentana || 0,
+          alto: datos.altoVentana || 0,
+          ubicacion: "centro"
+        };
+        
+      } else if (datos.tipo === "puertaventana") {
+        // Muro con Puerta y Ventana
+        nuevoMuro.medida1 = datos.muro1 || 0;
+        nuevoMuro.medida2 = datos.anchoPuerta || 0;
+        nuevoMuro.medida3 = datos.muro2 || 0;
+        
+        // Construir objeto ventana
+        nuevoMuro.ventana = {
+          tipo: "ventana",
+          ancho: datos.anchoVentana || 0,
+          alto: datos.altoVentana || 0,
+          ubicacion: datos.posicionPuerta === "izquierda" ? "derecha" : "izquierda"
+        };
+      }
+      
+      setMuroDatos(prev => ({
+        ...prev,
+        muro: nuevoMuro
+      }));
+      
+      setMostrarEditor(false);
+      alert("✅ Datos del editor guardados");
+    },
+    nodoA: "A",
+    nodoB: "B",
+    desplazamiento: 0,
+    escala: 1.5,
+    margen: 40,
+    altura: Number(muroDatos.muro.alto) || 250,
+    x1: 0,
+    y1: 0,
+    x2: Number(muroDatos.muro.ancho) * 2 || 600,
+    y2: 0,
+    muroInicial: {
+      id: Date.now(),
+      anchoPuerta: muroDatos.muro.medida2,
+      anchoVentana: muroDatos.muro.ventana?.ancho || 45,
+      altoVentana: muroDatos.muro.ventana?.alto || 110,
+      muro1: muroDatos.muro.medida1,
+      muro2: muroDatos.muro.medida3,
+      muro3: 0,
+      numeroVentana: 1,
+      posicionPuerta: "izquierda",
+    },
+    handleWheel: (e) => {
+      e.evt.preventDefault();
+      const scaleBy = 1.05;
+      const stage = e.target.getStage();
+      const oldScale = stage.scaleX();
+      const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+      setStageScale(newScale);
+    },
+    spacePressed: false,
+    isPanning: false,
+    stageScale: stageScale,
+  };
 
   const enviarMuro = async () => {
+    // Construir payload según el tipo de muro
+    let muroPayload = {
+      tipo: muroDatos.muro.tipo,
+      piso: muroDatos.muro.piso,
+      ancho_estructura: Number(muroDatos.muro.ancho_estructura),
+      ancho: Number(muroDatos.muro.ancho),
+      clase: Number(muroDatos.muro.clase),
+      estructura: Number(muroDatos.muro.estructura),
+      alto: Number(muroDatos.muro.alto),
+      medida1: Number(muroDatos.muro.medida1),
+      medida2: Number(muroDatos.muro.medida2),
+      medida3: Number(muroDatos.muro.medida3),
+    };
+
+    // Agregar ventana solo si existe y no es muroEntero ni muroPuerta
+    if (muroDatos.muro.tipo === "muroVentana" || muroDatos.muro.tipo === "muroPuertaVentana") {
+      if (muroDatos.muro.ventana) {
+        muroPayload.ventana = {
+          tipo: muroDatos.muro.ventana.tipo,
+          ancho: Number(muroDatos.muro.ventana.ancho),
+          alto: Number(muroDatos.muro.ventana.alto),
+          ubicacion: muroDatos.muro.ventana.ubicacion
+        };
+      } else {
+        alert("⚠️ Debes configurar la ventana usando el editor gráfico");
+        return;
+      }
+    } else {
+      muroPayload.ventana = null;
+    }
+
     let payload = {
       cinta_corona: Number(muroDatos.cinta_corona),
       viga_cimiento: Number(muroDatos.viga_cimiento),
@@ -51,19 +168,7 @@ export default function MurosModal({ onClose, onVolver }) {
       mamposteria: Number(muroDatos.mamposteria),
       ladrillo: Number(muroDatos.ladrillo),
       tipo: Number(muroDatos.tipo),
-      muro: {
-        tipo: muroDatos.muro.tipo,
-        piso: muroDatos.muro.piso,
-        ancho_estructura: Number(muroDatos.muro.ancho_estructura),
-        ancho: Number(muroDatos.muro.ancho),
-        clase: Number(muroDatos.muro.clase),
-        estructura: Number(muroDatos.muro.estructura),
-        alto: Number(muroDatos.muro.alto),
-        medida1: Number(muroDatos.muro.medida1),
-        medida2: Number(muroDatos.muro.medida2),
-        medida3: Number(muroDatos.muro.medida3),
-        ventana: muroDatos.muro.ventana,
-      },
+      muro: muroPayload,
     };
 
     console.log("📤 Payload enviado:", JSON.stringify(payload, null, 2));
@@ -199,13 +304,14 @@ Valor Total Obra a Todo Costo: $${cotizacion.Valor_total_obra_a_todo_costo}
     );
   }
 
+  // Renderizar editores
   if (mostrarEditor) {
     if (muroDatos.muro.tipo === "muroPuerta") {
-      return <MuroPuertaEditor muroDatos={muroDatos} setMuroDatos={setMuroDatos} onVolver={() => setMostrarEditor(false)} />;
+      return <MuroPuertaEditor {...propsEditor} />;
     } else if (muroDatos.muro.tipo === "muroVentana") {
-      return <MuroVentanaEditor muroDatos={muroDatos} setMuroDatos={setMuroDatos} onVolver={() => setMostrarEditor(false)} />;
+      return <MuroVentanaEditor {...propsEditor} />;
     } else if (muroDatos.muro.tipo === "muroPuertaVentana") {
-      return <MuroPuertaVentanaEditor muroDatos={muroDatos} setMuroDatos={setMuroDatos} onVolver={() => setMostrarEditor(false)} />;
+      return <MuroPuertaVentanaEditor {...propsEditor} />;
     }
   }
 
@@ -217,7 +323,7 @@ Valor Total Obra a Todo Costo: $${cotizacion.Valor_total_obra_a_todo_costo}
       <div className="grid-form">
         <label>
           Tipo de muro:
-          <select value={muroDatos.muro.tipo} onChange={(e) => setMuroDatos({ ...muroDatos, muro: { ...muroDatos.muro, tipo: e.target.value } })}>
+          <select value={muroDatos.muro.tipo} onChange={(e) => setMuroDatos({ ...muroDatos, muro: { ...muroDatos.muro, tipo: e.target.value, ventana: null } })}>
             <option value="muroEntero">Muro Entero</option>
             <option value="muroPuerta">Muro con Puerta</option>
             <option value="muroVentana">Muro con Ventana</option>
@@ -373,7 +479,28 @@ Valor Total Obra a Todo Costo: $${cotizacion.Valor_total_obra_a_todo_costo}
       </div>
 
       {muroDatos.muro.tipo !== "muroEntero" && (
-        <button onClick={() => setMostrarEditor(true)} className="btn-editor">🎨 Abrir editor gráfico para puertas/ventanas</button>
+        <div style={{ marginTop: 20, padding: 15, background: "#fff3cd", borderRadius: 5, border: "2px solid #ffc107" }}>
+          <p style={{ margin: 0, fontWeight: "bold" }}>⚠️ Antes de abrir el editor, asegúrate de haber ingresado:</p>
+          <ul style={{ marginTop: 10 }}>
+            <li><strong>Ancho libre (cm)</strong> - Define el ancho total del muro</li>
+            <li><strong>Alto (cm)</strong> - Define la altura del muro</li>
+          </ul>
+        </div>
+      )}
+
+      {muroDatos.muro.tipo !== "muroEntero" && (
+        <button 
+          onClick={() => {
+            if (!muroDatos.muro.ancho || !muroDatos.muro.alto) {
+              alert("⚠️ Por favor ingresa el ancho libre y el alto del muro antes de abrir el editor");
+              return;
+            }
+            setMostrarEditor(true);
+          }} 
+          className="btn-editor"
+        >
+          🎨 Abrir editor gráfico para puertas/ventanas
+        </button>
       )}
 
       <div className="acciones">
