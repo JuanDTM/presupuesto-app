@@ -2,18 +2,18 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../modules/auth/components/ProtectedRoute';
 import PublicOnlyRoute from '../modules/auth/components/PublicOnlyRoute';
-import LoginForm from '../modules/auth/components/LoginForm';
-import RegisterForm from '../modules/auth/components/RegisterForm';
-import RecoverPassword from '../modules/auth/components/RecoverPassword';
+import LoginForm from '../pages/auth/login/LoginForm';
+import RegisterForm from '../pages/auth/register/RegisterForm';
+import RecoverPassword from '../pages/auth/recover/RecoverPassword';
 import LogoutButton from '../modules/auth/components/LogoutButton';
 import ComponenteEjesNodos from '../components/ComponenteEjesNodos';
-import VentanaInicio from '../components/VentanaInicio';
+import VentanaInicio from '../pages/home/VentanaInicio';
 import styles from './AppRoutes.module.css';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* 👇 Ventana de inicio pública en la raíz */}
+      {/* Ventana de inicio pública en la raíz */}
       <Route path="/" element={<VentanaInicio />} />
 
       {/* Rutas públicas (solo para usuarios no autenticados) */}

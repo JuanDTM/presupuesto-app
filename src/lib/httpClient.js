@@ -25,7 +25,7 @@ export async function request(path, { method = 'GET', body, auth = false } = {})
 
   if (response.status === 401) {
     try { sessionStorage.removeItem('token'); } catch {}
-    throw new Error('UNAUTHORIZED');
+    throw new Error('Error de autenticación');
   }
 
   const rawText = await response.text();
