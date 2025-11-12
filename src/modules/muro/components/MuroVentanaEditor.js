@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from "react"; // Importar useEffect junto con useState
-import { Stage, Layer, Rect, Text } from "react-konva"; // Importar componentes de react-konva
+import React, { useState, useEffect } from "react";
+import { Stage, Layer, Rect, Text } from "react-konva";
+import "./MuroEditorModal.css";
 
 export default function MuroVentanaEditor({
   visible,
@@ -129,76 +130,166 @@ export default function MuroVentanaEditor({
     (numeroVentana === 1 || muro3 >= 0) &&
     anchoTotal <= cotaLibre;
 
-  return visible ? (
-    <div style={{
-      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-      background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 8, display: "flex", flexDirection: "row",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)", padding: 70, minWidth: 1000, minHeight: 500
-      }}>
-        {/* Inputs */}
-        <div style={{  minWidth: 320, marginRight: 48}}>
-          <h2>Editor de Muro con Ventana</h2>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>ancho ventana <input type="number" value={anchoVentana} min={1} max={cotaLibre} onChange={e => setAnchoVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+  if (!visible) return null;
+
+  return (
+    <div className="muro-editor-overlay">
+      <div className="muro-editor">
+        <div className="muro-editor__panel">
+          <div className="muro-editor__title">
+            <h2>Pared con ventana</h2>
+            <p>Indica la cantidad de ventanas y sus separaciones para estimar materiales y mano de obra.</p>
           </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>alto ventana <input type="number" value={altoVentana} min={1} max={altura} onChange={e => setAltoVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
-          </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>numero ventana <input type="number" value={numeroVentana} min={1} max={2} onChange={e => setNumeroVentana(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
-          </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro1 <input type="number" value={muro1} min={0} max={cotaLibre} onChange={e => setMuro1(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
-          </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro2 <input type="number" value={muro2} min={0} max={cotaLibre} onChange={e => setMuro2(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
-          </div>
-          {numeroVentana === 2 && (
-            <div style={{ fontSize: 20, marginBottom: 8 }}>
-              <label>muro 3 <input type="number" value={muro3} min={0} max={cotaLibre} onChange={e => setMuro3(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+
+          <div className="muro-editor__fields">
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-v-ventana-ancho">
+                Ancho de la ventana (cm)
+              </label>
+              <input
+                id="editor-v-ventana-ancho"
+                type="number"
+                min={1}
+                max={Math.floor(cotaLibre)}
+                value={anchoVentana}
+                onChange={(e) => setAnchoVentana(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
             </div>
-          )}
-          <div style={{ color: anchoTotal > cotaLibre ? "red" : "#222", fontWeight: "bold", marginBottom: 12 }}>
-            Total: {anchoTotal} cm / {cotaLibre} cm
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-v-ventana-alto">
+                Alto de la ventana (cm)
+              </label>
+              <input
+                id="editor-v-ventana-alto"
+                type="number"
+                min={1}
+                max={Math.floor(altura)}
+                value={altoVentana}
+                onChange={(e) => setAltoVentana(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
+            </div>
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-v-numero">
+                Número de ventanas
+              </label>
+              <select
+                id="editor-v-numero"
+                value={numeroVentana}
+                onChange={(e) => setNumeroVentana(Number(e.target.value))}
+                className="muro-editor__select muro-editor__input--compact"
+              >
+                <option value={1}>Una ventana</option>
+                <option value={2}>Dos ventanas</option>
+              </select>
+            </div>
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-v-muro1">
+                Tramo izquierdo (cm)
+              </label>
+              <input
+                id="editor-v-muro1"
+                type="number"
+                min={0}
+                max={Math.floor(cotaLibre)}
+                value={muro1}
+                onChange={(e) => setMuro1(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
+            </div>
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-v-muro2">
+                Tramo derecho (cm)
+              </label>
+              <input
+                id="editor-v-muro2"
+                type="number"
+                min={0}
+                max={Math.floor(cotaLibre)}
+                value={muro2}
+                onChange={(e) => setMuro2(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
+            </div>
+
+            {numeroVentana === 2 && (
+              <div className="muro-editor__field">
+                <label className="muro-editor__label" htmlFor="editor-v-muro3">
+                  Tramo intermedio (cm)
+                </label>
+                <input
+                  id="editor-v-muro3"
+                  type="number"
+                  min={0}
+                  max={Math.floor(cotaLibre)}
+                  value={muro3}
+                  onChange={(e) => setMuro3(Number(e.target.value))}
+                  className="muro-editor__input muro-editor__input--compact"
+                />
+              </div>
+            )}
           </div>
-          <div>Altura actual: {altura}</div>
-          <button
-            style={{ fontSize: 28, padding: "8px 32px", marginTop: 12 }}
-            onClick={() => {
-              console.log("Botón aceptar presionado");
-              const datos = {
-                tipo: "ventana",
-                anchoVentana,
-                altoVentana,
-                numeroVentana,
-                muro1,
-                muro2,
-                muro3: numeroVentana === 2 ? muro3 : 0,
-                altura,
-                nodoA,
-                nodoB,
-                desplazamiento,
-                escala,
-                margen,
-                x1,
-                y1,
-                x2,
-                y2,
-                id: muroInicial.id // si existe, para actualizar
-              };
-              console.log("Datos enviados:", datos);
-              onSave(datos);
-            }}
-            disabled={anchoTotal > cotaLibre}
-          >aceptar</button>
-          <button onClick={onClose} style={{ marginLeft: 16, fontSize: 20 }}>Cancelar</button>
+
+          <div className="muro-editor__stats">
+            <span>
+              Total utilizado: <strong>{Math.round(anchoTotal)} cm</strong> de {Math.round(cotaLibre)} cm disponibles.
+            </span>
+            {!datosValidos && (
+              <span className="muro-editor__warning">
+                Las dimensiones actuales superan el ancho libre del muro, ajusta los tramos.
+              </span>
+            )}
+            <span>Altura actual: {altura} cm</span>
+          </div>
+
+          <div className="muro-editor__actions">
+            <button
+              type="button"
+              className="muro-editor__button muro-editor__button--primary"
+              onClick={() => {
+                const datos = {
+                  tipo: "ventana",
+                  anchoVentana,
+                  altoVentana,
+                  numeroVentana,
+                  muro1,
+                  muro2,
+                  muro3: numeroVentana === 2 ? muro3 : 0,
+                  altura,
+                  nodoA,
+                  nodoB,
+                  desplazamiento,
+                  escala,
+                  margen,
+                  x1,
+                  y1,
+                  x2,
+                  y2,
+                  id: muroInicial.id,
+                };
+                onSave(datos);
+              }}
+              disabled={!datosValidos}
+            >
+              Guardar cambios
+            </button>
+            <button
+              type="button"
+              className="muro-editor__button muro-editor__button--ghost"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
-        {/* Canvas de diseño */}
-        <div style={{ background: "#111", borderRadius: 8, padding: 16, minWidth: 1000, minHeight: 500 }}>
-          <Stage 
+
+        <div className="muro-editor__canvas">
+          <Stage
             width={canvasWidth}
             height={canvasHeight}
             scaleX={stageScale} // Aplicar escala horizontal
@@ -263,5 +354,5 @@ export default function MuroVentanaEditor({
         </div>
       </div>
     </div>
-  ) : null;
+  );
 }

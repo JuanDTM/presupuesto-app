@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from "react"; // Importar useEffect junto con useState
-import { Stage, Layer, Rect, Text } from "react-konva"; // Importar componentes de react-konva
+import React, { useState, useEffect } from "react";
+import { Stage, Layer, Rect, Text } from "react-konva";
+import "./MuroEditorModal.css";
 
 export default function MuroPuertaEditor({
   visible,
@@ -43,14 +44,7 @@ export default function MuroPuertaEditor({
   
   const anchoTotal = sumaMuros + anchoPuerta;
 
-  // Escala para que el muro siempre quepa en el canvas
-  // const escala = Math.min(1.5, 600 / cotaLibre);
-  // const margen = 40;
-
-  // Dimensiones del canvas
-  // Calcular la longitud del muro
-  const cotaLibre = (Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2))/2;
-  console.log("cotaLibre:", cotaLibre);
+  const cotaLibre = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)) / 2;
   const canvasWidth = Math.max(cotaLibre * escala + margen * 2, 1000);
   const canvasHeight = Math.max(altura * escala + margen * 2, 700);
 
@@ -84,71 +78,116 @@ export default function MuroPuertaEditor({
       label: `${muro2} cm`
     });
     x += muro2 * escala;
-  
+    const datosValidos = anchoPuerta > 0 && muro1 >= 0 && muro2 >= 0 && anchoTotal <= cotaLibre;
 
-  // Validación mínima
-  const datosValidos =
-    anchoPuerta > 0 &&
-    muro1 >= 0 &&
-    muro2 >= 0 &&
-    anchoTotal <= cotaLibre;
+  if (!visible) return null;
 
-  return visible ? (
-    <div style={{
-      position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-      background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 8, display: "flex", flexDirection: "row",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)", padding: 70, minWidth: 1000, minHeight: 500
-      }}>
-        {/* Inputs */}
-        <div style={{  minWidth: 320, marginRight: 48}}>
-          <h2>Editor de Muro con Puerta</h2>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>ancho Puerta <input type="number" value={anchoPuerta} min={1} max={cotaLibre} onChange={e => setAnchoPuerta(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+  return (
+    <div className="muro-editor-overlay">
+      <div className="muro-editor">
+        <div className="muro-editor__panel">
+          <div className="muro-editor__title">
+            <h2>Muro con puerta</h2>
+            <p>Define la apertura de la puerta y los segmentos laterales para ajustar la cotización.</p>
           </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro1 <input type="number" value={muro1} min={0} max={cotaLibre} onChange={e => setMuro1(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
-          </div>
-          <div style={{ fontSize: 20, marginBottom: 8 }}>
-            <label>muro2 <input type="number" value={muro2} min={0} max={cotaLibre} onChange={e => setMuro2(Number(e.target.value))} style={{ width: 60, fontSize: 20 }} /></label>
+
+          <div className="muro-editor__fields">
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-puerta-ancho">
+                Ancho de la puerta (cm)
+              </label>
+              <input
+                id="editor-puerta-ancho"
+                type="number"
+                min={1}
+                max={Math.floor(cotaLibre)}
+                value={anchoPuerta}
+                onChange={(e) => setAnchoPuerta(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
             </div>
-          <div style={{ color: anchoTotal > cotaLibre ? "red" : "#222", fontWeight: "bold", marginBottom: 12 }}>
-            Total: {anchoTotal} cm / {cotaLibre} cm
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-puerta-muro1">
+                Largo del primer tramo (cm)
+              </label>
+              <input
+                id="editor-puerta-muro1"
+                type="number"
+                min={0}
+                max={Math.floor(cotaLibre)}
+                value={muro1}
+                onChange={(e) => setMuro1(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
+            </div>
+
+            <div className="muro-editor__field">
+              <label className="muro-editor__label" htmlFor="editor-puerta-muro2">
+                Largo del segundo tramo (cm)
+              </label>
+              <input
+                id="editor-puerta-muro2"
+                type="number"
+                min={0}
+                max={Math.floor(cotaLibre)}
+                value={muro2}
+                onChange={(e) => setMuro2(Number(e.target.value))}
+                className="muro-editor__input muro-editor__input--compact"
+              />
+            </div>
           </div>
-          <div>Altura actual: {altura}</div>
-          <button
-            style={{ fontSize: 28, padding: "8px 32px", marginTop: 12 }}
-            onClick={() => {
-              console.log("Botón aceptar presionado");
-              const datos = {
-                tipo: "puerta",
-                anchoPuerta,
-                muro1,
-                muro2,
-                altura,
-                nodoA,
-                nodoB,
-                desplazamiento,
-                escala,
-                margen,
-                x1,
-                y1,
-                x2,
-                y2,
-                id: muroInicial.id // si existe, para actualizar
-              };
-              console.log("Datos enviados:", datos);
-              onSave(datos);
-            }}
-            disabled={anchoTotal > cotaLibre}
-          >aceptar</button>
-          <button onClick={onClose} style={{ marginLeft: 16, fontSize: 20 }}>Cancelar</button>
+
+          <div className="muro-editor__stats">
+            <span>
+              Total utilizado: <strong>{Math.round(anchoTotal)} cm</strong> de {Math.round(cotaLibre)} cm disponibles.
+            </span>
+            {!datosValidos && (
+              <span className="muro-editor__warning">Ajusta las medidas: superan la longitud disponible.</span>
+            )}
+            <span>Altura actual: {altura} cm</span>
+          </div>
+
+          <div className="muro-editor__actions">
+            <button
+              type="button"
+              className="muro-editor__button muro-editor__button--primary"
+              onClick={() => {
+                const datos = {
+                  tipo: "puerta",
+                  anchoPuerta,
+                  muro1,
+                  muro2,
+                  altura,
+                  nodoA,
+                  nodoB,
+                  desplazamiento,
+                  escala,
+                  margen,
+                  x1,
+                  y1,
+                  x2,
+                  y2,
+                  id: muroInicial.id,
+                };
+                onSave(datos);
+              }}
+              disabled={!datosValidos}
+            >
+              Guardar cambios
+            </button>
+            <button
+              type="button"
+              className="muro-editor__button muro-editor__button--ghost"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+          </div>
         </div>
-        {/* Canvas de diseño */}
-        <div style={{ background: "#111", borderRadius: 8, padding: 16, minWidth: 1000, minHeight: 500 }}>
-          <Stage 
+
+        <div className="muro-editor__canvas">
+          <Stage
             width={canvasWidth}
             height={canvasHeight}
             scaleX={stageScale} // Aplicar escala horizontal
@@ -213,5 +252,5 @@ export default function MuroPuertaEditor({
         </div>
       </div>
     </div>
-  ) : null;
+  );
 }

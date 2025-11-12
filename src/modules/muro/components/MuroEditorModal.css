@@ -1,0 +1,219 @@
+.muro-editor-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(4px);
+  z-index: 2200;
+  overflow-y: auto;
+}
+
+.muro-editor {
+  display: grid;
+  grid-template-columns: minmax(320px, 360px) minmax(640px, 1fr);
+  gap: 32px;
+  width: min(1120px, 100%);
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 40px 96px -48px rgba(16, 30, 59, 0.6);
+  padding: 36px;
+  overflow: auto;
+}
+
+.muro-editor__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.muro-editor__title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.muro-editor__title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #121f3f;
+  letter-spacing: 0.04em;
+}
+
+.muro-editor__title p {
+  margin: 0;
+  font-size: 13px;
+  color: #616b87;
+  line-height: 1.6;
+}
+
+.muro-editor__fields {
+  display: grid;
+  gap: 16px 18px;
+}
+
+.muro-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.muro-editor__label {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6c7692;
+  font-weight: 600;
+}
+
+.muro-editor__input,
+.muro-editor__select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid #d7dceb;
+  background: #f5f7fc;
+  color: #1b2642;
+  font-size: 15px;
+  transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.muro-editor__input:focus,
+.muro-editor__select:focus {
+  border-color: #1c53ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(28, 83, 255, 0.18);
+  outline: none;
+}
+
+.muro-editor__stats {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f1f5ff;
+  border: 1px solid rgba(195, 205, 236, 0.6);
+  font-size: 13px;
+  color: #425072;
+}
+
+.muro-editor__stats strong {
+  color: #1c53ff;
+}
+
+.muro-editor__warning {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c23645;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.muro-editor__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.muro-editor__button {
+  border: none;
+  border-radius: 14px;
+  padding: 11px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.muro-editor__button--primary {
+  background: linear-gradient(135deg, #1c53ff 0%, #0035b3 100%);
+  color: #ffffff;
+}
+
+.muro-editor__button--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 42px -30px rgba(28, 83, 255, 0.7);
+}
+
+.muro-editor__button--primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.muro-editor__button--ghost {
+  background: #e7eaf4;
+  color: #1c294d;
+}
+
+.muro-editor__button--ghost:hover {
+  background: #dfe3f0;
+}
+
+.muro-editor__canvas {
+  background: #0f172a;
+  border-radius: 20px;
+  padding: 16px;
+  border: 1px solid rgba(59, 72, 110, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 520px;
+  overflow: auto;
+}
+
+.muro-editor__canvas .konvajs-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.muro-editor__field--inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.muro-editor__radio-group {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.muro-editor__radio-group label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  color: #1b2748;
+}
+
+.muro-editor__input--compact {
+  max-width: 110px;
+}
+
+@media (max-width: 1080px) {
+  .muro-editor {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .muro-editor__canvas {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 640px) {
+  .muro-editor {
+    padding: 28px 20px;
+    border-radius: 22px;
+  }
+
+  .muro-editor-overlay {
+    padding: 16px;
+  }
+}
+

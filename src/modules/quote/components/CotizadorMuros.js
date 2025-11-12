@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { request } from "../../../lib/httpClient";
 import { pdf } from '@react-pdf/renderer';
-import CotizacionPDF from './CotizacionPDF';
+import CotizacionPDF from '../../muro/components/CotizacionPDF';
 import styles from "./CotizadorMuros.module.css";
 import apiUrls from "../../../config/api_urls";
 
