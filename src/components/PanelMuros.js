@@ -1,8 +1,8 @@
 // PanelMuros.js
 import React, { useState, useEffect } from "react";
-import MuroVentanaEditor from "./MuroVentanaEditor"; // tu editor modal
-import MuroPuertaEditor from "./MuroPuertaEditor"; // tu editor modal
-import MuroPuertaVentanaEditor from "./MuroPuertaVentanaEditor"; // tu editor modal para puerta ventana
+import MuroVentanaEditor from "../modules/muro/components/MuroVentanaEditor"; // tu editor modal
+import MuroPuertaEditor from "../modules/muro/components/MuroPuertaEditor"; // tu editor modal
+import MuroPuertaVentanaEditor from "../modules/muro/components/MuroPuertaVentanaEditor"; // tu editor modal para puerta ventana
 import styles from "./PanelMuros.module.css";
 
 //tipo de muros

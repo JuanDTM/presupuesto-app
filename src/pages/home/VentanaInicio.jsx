@@ -62,9 +62,6 @@ export default function VentanaInicio() {
                   Construcción total
                 </button>
               </div>
-              <Link to="/recuperar" className="forgot-link forgot-link--logged">
-                ¿Necesitas recuperar tu contraseña?
-              </Link>
             </>
           )}
         </div>
