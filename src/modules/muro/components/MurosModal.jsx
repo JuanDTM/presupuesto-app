@@ -8,12 +8,15 @@ import MuroPuertaVentanaEditor from "./MuroPuertaVentanaEditor";
 import { createMuroDefaultValues, muroSchema } from "../validation/schemas";
 import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
+import { pdf } from "@react-pdf/renderer";
+import CotizacionPDF from "./CotizacionPDF";
 
 export default function MurosModal({ onClose, onVolver }) {
   const [muroDatos, setMuroDatos] = useState(() => createMuroDefaultValues());
   const [mostrarEditor, setMostrarEditor] = useState(false);
   const [cotizacion, setCotizacion] = useState(null);
   const [stageScale, setStageScale] = useState(1);
+  const [ultimoMuroCotizado, setUltimoMuroCotizado] = useState(null);
 
   const defaultValues = useMemo(() => createMuroDefaultValues(), []);
 
@@ -231,6 +234,7 @@ export default function MurosModal({ onClose, onVolver }) {
 
       const data = JSON.parse(responseText);
       console.log("✅ Respuesta API parseada:", data);
+      setUltimoMuroCotizado(merged);
       setCotizacion(data);
       alert("Cotización recibida con éxito ✅");
     } catch (err) {
@@ -239,30 +243,38 @@ export default function MurosModal({ onClose, onVolver }) {
     }
   };
 
-  const descargarPDF = () => {
-    if (!cotizacion) return;
+  const generarPDF = async () => {
+    if (!cotizacion) {
+      alert("No hay cotización disponible para descargar");
+      return;
+    }
 
-    const contenido = `
-COTIZACIÓN DE MURO
-==================
+    try {
+      const muroParaPdf = ultimoMuroCotizado?.muro || muroDatos.muro;
+      const resumenMuro = {
+        index: 0,
+        tipo: muroParaPdf?.tipo ?? "muroEntero",
+        nodoA: ultimoMuroCotizado?.nodoA ?? 0,
+        nodoB: ultimoMuroCotizado?.nodoB ?? 1,
+        altura: muroParaPdf?.alto ?? 0,
+      };
 
-${cotizacion.mano_obra}
+      const blob = await pdf(
+        <CotizacionPDF cotizacion={cotizacion} muroSeleccionado={resumenMuro} />
+      ).toBlob();
 
------------------------------------
-RESUMEN FINANCIERO
------------------------------------
-Valor Total Mano de Obra: $${cotizacion.valor_total_mano_obra}
-Valor Total Materiales: $${cotizacion.Valor_total_Materiales}
-Valor Total Obra a Todo Costo: $${cotizacion.Valor_total_obra_a_todo_costo}
-    `;
-
-    const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "cotizacion_muro.txt";
-    a.click();
-    URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cotizacion-muro-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al generar PDF:", error);
+      alert("No se pudo generar el PDF");
+    }
   };
 
   if (cotizacion) {
@@ -298,8 +310,12 @@ Valor Total Obra a Todo Costo: $${cotizacion.Valor_total_obra_a_todo_costo}
           </div>
 
           <div className="muro-actions">
-            <button onClick={descargarPDF} className="muro-button muro-button--secondary" type="button">
-              Descargar detalle
+            <button
+              onClick={generarPDF}
+              className="muro-button muro-button--secondary"
+              type="button"
+            >
+              Descargar PDF
             </button>
             <button
               onClick={() => {
