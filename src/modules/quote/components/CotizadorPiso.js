@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { request } from "../../../lib/httpClient";
 import { pdf } from '@react-pdf/renderer';
-import CotizacionPisoPDF from './CotizacionPisoPDF';
+import CotizacionPisoPDF from '../../piso/components/CotizacionPisoPDF';
 import styles from "./CotizadorPiso.module.css";
 import apiUrls from "../../../config/api_urls";
 

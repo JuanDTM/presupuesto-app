@@ -2,7 +2,6 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
-// Estilos simplificados para el PDF
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -103,24 +102,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#dc2626',
   },
-  valoresContainer: {
-    marginTop: 20,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  valorItem: {
-    backgroundColor: '#f0f9ff',
-    padding: 12,
-    borderRadius: 6,
-    borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
-  },
-  valorItemText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1e40af',
-  },
   footer: {
     position: 'absolute',
     bottom: 30,
@@ -140,12 +121,11 @@ const styles = StyleSheet.create({
  * Función para resaltar precios en el texto de mano de obra
  */
 const resaltarPrecios = (texto) => {
-  // Buscar patrones de precios (números con $ o pesos)
   const patronPrecio = /(\$\s*\d+(?:,\d{3})*(?:\.\d{2})?|\d+(?:,\d{3})*(?:\.\d{2})?\s*pesos?)/gi;
-  
   const partes = texto.split(patronPrecio);
-  
+
   return partes.map((parte, index) => {
+    patronPrecio.lastIndex = 0;
     if (patronPrecio.test(parte)) {
       return (
         <Text key={index} style={styles.precioText}>
@@ -157,15 +137,11 @@ const resaltarPrecios = (texto) => {
   });
 };
 
-/**
- * Renderiza el bloque de mano de obra, colocando ciertas líneas en un recuadro
- */
 const renderManoObra = (texto) => {
   if (!texto) return null;
 
   const lineas = String(texto).split(/\r?\n/);
 
-  // Frases que deben ir en recuadro (case-insensitive)
   const frasesEnCaja = [
     'valor total materiales:',
     'valor total de la obra:',
@@ -195,10 +171,9 @@ const renderManoObra = (texto) => {
   });
 };
 
-/**
- * Función para formatear opciones de losa, mortero y enchape
- */
 const formatearOpcion = (valor, tipo) => {
+  const numero = Number(valor);
+
   if (tipo === 'losa') {
     const opciones = {
       0: 'Sin losa',
@@ -206,7 +181,7 @@ const formatearOpcion = (valor, tipo) => {
       2: 'Losa normal de 8cm',
       3: 'Losa pobre de 10cm'
     };
-    return opciones[valor] || 'No especificado';
+    return opciones[numero] || 'No especificado';
   }
   if (tipo === 'mortero') {
     const opciones = {
@@ -215,7 +190,7 @@ const formatearOpcion = (valor, tipo) => {
       2: 'Mortero de 5cm',
       3: 'Mortero de 7cm'
     };
-    return opciones[valor] || 'No especificado';
+    return opciones[numero] || 'No especificado';
   }
   if (tipo === 'enchape') {
     const opciones = {
@@ -223,23 +198,31 @@ const formatearOpcion = (valor, tipo) => {
       1: 'Cerámica',
       2: 'Porcelanato'
     };
-    return opciones[valor] || 'No especificado';
+    return opciones[numero] || 'No especificado';
   }
   return 'No especificado';
 };
 
-/**
- * Componente para generar el PDF de cotización de piso
- */
+const toCurrency = (valor) => {
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) {
+    return valor ?? '-';
+  }
+  return numero.toLocaleString('es-CO');
+};
+
 export default function CotizacionPisoPDF({ cotizacion, params }) {
+  const largo = Number(params?.largo || 0);
+  const ancho = Number(params?.ancho || 0);
+  const areas = Array.isArray(params?.areas) ? params.areas : [];
   const fechaActual = new Date().toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
 
-  // Calcular área en m²
-  const areaM2 = ((params.largo * params.ancho) / 10000).toFixed(2);
+  const areaM2 =
+    largo > 0 && ancho > 0 ? ((largo * ancho) / 10000).toFixed(2) : null;
 
   return (
     <Document>
@@ -257,14 +240,16 @@ export default function CotizacionPisoPDF({ cotizacion, params }) {
         <View style={styles.pisoInfo}>
           <Text style={styles.pisoTitle}>Información del Piso</Text>
           <Text style={styles.pisoDetails}>
-            Largo: {params.largo} cm
+            Largo: {largo || 'N/A'} cm
           </Text>
           <Text style={styles.pisoDetails}>
-            Ancho: {params.ancho} cm
+            Ancho: {ancho || 'N/A'} cm
           </Text>
-          <Text style={styles.pisoDetails}>
-            Área: {areaM2} m²
-          </Text>
+          {areaM2 && (
+            <Text style={styles.pisoDetails}>
+              Área estimada: {areaM2} m²
+            </Text>
+          )}
           <Text style={styles.pisoDetails}>
             Losa: {formatearOpcion(params.losa, 'losa')}
           </Text>
@@ -274,6 +259,19 @@ export default function CotizacionPisoPDF({ cotizacion, params }) {
           <Text style={styles.pisoDetails}>
             Enchape: {formatearOpcion(params.enchape, 'enchape')}
           </Text>
+          <Text style={styles.pisoDetails}>
+            Remodelación: {params?.remodelacion ? 'Sí' : 'No'}
+          </Text>
+          {areas.length > 0 && (
+            <Text style={[styles.pisoDetails, { marginTop: 8, fontWeight: 'bold' }]}>
+              Áreas internas:
+            </Text>
+          )}
+          {areas.map((area, index) => (
+            <Text key={`area-${index}`} style={styles.pisoDetails}>
+              Área #{index + 1}: {Number(area.largo) || 0} cm × {Number(area.ancho) || 0} cm
+            </Text>
+          ))}
         </View>
 
         {/* Mano de Obra y Materiales */}
@@ -285,28 +283,28 @@ export default function CotizacionPisoPDF({ cotizacion, params }) {
         )}
 
         {/* Valores Totales */}
-        <View style={styles.valoresContainer}>
-          {cotizacion?.valor_total_mano_obra && (
-            <View style={styles.valorItem}>
-              <Text style={styles.valorItemText}>
-                Valor Total Mano de Obra: ${cotizacion.valor_total_mano_obra}
+        {(cotizacion?.valor_total_mano_obra ||
+          cotizacion?.Valor_total_Materiales) && (
+          <View style={styles.manoObraSection}>
+            <Text style={styles.sectionTitle}>RESUMEN FINANCIERO</Text>
+            {cotizacion?.valor_total_mano_obra && (
+              <Text style={styles.manoObraText}>
+                Valor Total Mano de Obra: ${toCurrency(cotizacion.valor_total_mano_obra)}
               </Text>
-            </View>
-          )}
-          {cotizacion?.Valor_total_Materiales && (
-            <View style={styles.valorItem}>
-              <Text style={styles.valorItemText}>
-                Valor Total Materiales: ${cotizacion.Valor_total_Materiales}
+            )}
+            {cotizacion?.Valor_total_Materiales && (
+              <Text style={styles.manoObraText}>
+                Valor Total Materiales: ${toCurrency(cotizacion.Valor_total_Materiales)}
               </Text>
-            </View>
-          )}
-        </View>
+            )}
+          </View>
+        )}
 
-        {/* Valor Total de la Obra */}
         {cotizacion?.Valor_total_obra_a_todo_costo && (
           <View style={styles.valorTotal}>
             <Text style={styles.valorTotalText}>
-              VALOR TOTAL DE LA OBRA: ${cotizacion.Valor_total_obra_a_todo_costo}
+              VALOR TOTAL DE LA OBRA: $
+              {toCurrency(cotizacion.Valor_total_obra_a_todo_costo)}
             </Text>
           </View>
         )}

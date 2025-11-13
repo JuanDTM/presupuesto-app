@@ -353,6 +353,9 @@ export default function MurosModal({ onClose, onVolver }) {
     <form className="muro-modal" onSubmit={handleSubmit(enviarCotizacion)} noValidate>
       <header className="muro-modal__header">
         <div>
+          <button onClick={onVolver} className="muro-button muro-button--ghost" type="button">
+          Volver
+          </button>
           <h1>Muros</h1>
           <p className="muro-modal__hint">
             Completa los parámetros estructurales y de acabados para obtener una estimación

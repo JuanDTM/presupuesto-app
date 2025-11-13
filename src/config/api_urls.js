@@ -10,7 +10,11 @@ const apiUrls = {
   cotizacion: {
     cotizarMuro: '/cotizacion-muro',
     cotizarPiso: '/cotizacion-piso',
-    cotizarCielo: '/cotizacion-cielo'
+    cotizarCielo: '/cotizacion-cielo',
+    cotizarTecho: '/cotizacion-techo',
+    cotizarCimientos: '/cotizacion-cimientos',
+    cotizarVigas: '/cotizacion-vigas',
+    cotizarColumnas: '/cotizacion-columnas',
   }
 };
 

@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import "./ReformasModal.css";
 import MurosModal from "../modules/muro/components/MurosModal";
-import PisosModal from "./PisosModal";
-import CieloRasoModal from "./CieloRasoModal";
-import VigasModal from "./VigasModal";
-import ColumnasModal from "./ColumnasModal";
-import CimientosModal from "./CimientosModal";
-import TechosModal from "./TechosModal";
+import PisosModal from "../modules/piso/components/PisosModal";
+import CieloRasoModal from "../modules/cielo/components/CieloRasoModal";
+import VigasModal from "../modules/vigas/components/VigasModal";
+import ColumnasModal from "../modules/columnas/components/ColumnasModal";
+import CimientosModal from "../modules/cimientos/components/CimientosModal";
+import TechosModal from "../modules/cubierta/components/TechosModal";
 
 const CATEGORIES = [
   {
