@@ -1,3 +1,5 @@
+/* @jsxRuntime classic */
+/* @jsx React.createElement */
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../modules/auth/components/ProtectedRoute';
@@ -6,7 +8,7 @@ import LoginForm from '../pages/auth/login/LoginForm';
 import RegisterForm from '../pages/auth/register/RegisterForm';
 import RecoverPassword from '../pages/auth/recover/RecoverPassword';
 import LogoutButton from '../modules/auth/components/LogoutButton';
-import ComponenteEjesNodos from '../components/ComponenteEjesNodos';
+import ComponenteEjesNodos from '../modules/construccionTotal/ComponenteEjesNodos';
 import VentanaInicio from '../pages/home/VentanaInicio';
 import styles from './AppRoutes.module.css';
 

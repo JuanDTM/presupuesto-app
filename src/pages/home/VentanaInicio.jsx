@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../modules/auth/context/AuthContext';
 import ReformasModal from '../../components/ReformasModal';
+import ReformaTotalModal from '../../modules/construccionTotal/ReformaTotalModal';
 import { useNavigate } from 'react-router-dom';
 import './VentanaInicio.css';
 
@@ -71,17 +72,7 @@ export default function VentanaInicio() {
         <ReformasModal visible={mostrarReformas} onClose={() => setMostrarReformas(false)} />
       )}
 
-      {mostrarConstruccion && (
-        <div className="overlay">
-          <div className="modal">
-            <h2>🏗️ Construcción Total</h2>
-            <p>Funcionalidad en desarrollo...</p>
-            <button onClick={() => setMostrarConstruccion(false)} className="btn-cerrar">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      )}
+      <ReformaTotalModal visible={mostrarConstruccion} onClose={() => setMostrarConstruccion(false)} />
     </div>
   );
 }

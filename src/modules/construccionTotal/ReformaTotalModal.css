@@ -1,0 +1,143 @@
+.reforma-total-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 23, 45, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 2100;
+  padding: 24px;
+}
+
+.reforma-total-modal {
+  position: relative;
+  width: min(1240px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 30px;
+  box-shadow: 0 48px 132px -58px rgba(12, 24, 51, 0.7);
+  overflow: hidden;
+}
+
+.reforma-total__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 48px 18px;
+  border-bottom: 1px solid #eef1fa;
+  background: linear-gradient(165deg, #f8f9ff 0%, #edf2ff 100%);
+}
+
+.reforma-total__title {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.reforma-total__badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(28, 83, 255, 0.1);
+  color: #1c53ff;
+  font-size: 24px;
+}
+
+.reforma-total__title h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #132148;
+}
+
+.reforma-total__title p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7480a2;
+}
+
+.reforma-total__close {
+  border: none;
+  background: rgba(243, 245, 255, 0.92);
+  color: #6b7696;
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.16s ease;
+}
+
+.reforma-total__close:hover {
+  background: #1c53ff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.reforma-total__layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 38px 36px;
+  overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.reforma-total__layout > * {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .reforma-total__layout {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 720px) {
+  .reforma-total-modal {
+    border-radius: 26px;
+  }
+
+  .reforma-total__header {
+    padding: 26px 28px 16px;
+  }
+
+  .reforma-total__layout {
+    padding: 24px 22px 30px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .reforma-total-overlay {
+    padding: 16px;
+  }
+
+  .reforma-total-modal {
+    border-radius: 22px;
+  }
+
+  .reforma-total__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .reforma-total__close {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+  }
+}
+

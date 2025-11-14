@@ -152,11 +152,15 @@ export default function TechosModal({ onClose, onVolver }) {
   const largoValue = Number(largoWatch) || 0;
   const altoInclinacionValue = Number(altoInclinacionWatch) || 0;
 
-  const escala = 2;
+  const dimensionMaxima = Math.max(anchoValue, largoValue, 1);
+  const escalaCalculada = 780 / dimensionMaxima;
+  const escala = Number.isFinite(escalaCalculada)
+    ? Math.min(2, Math.max(0.45, escalaCalculada))
+    : 2;
   const margen = 50;
   const canvasWidth = margen + anchoValue * escala + margen;
   const canvasHeight = margen + largoValue * escala + margen;
-  const extraMargin = Math.max(500, Math.max(canvasWidth, canvasHeight) * 0.5);
+  const extraMargin = 140;
   const stageWidth = canvasWidth + extraMargin * 2;
   const stageHeight = canvasHeight + extraMargin * 2;
   const offsetX = extraMargin;
@@ -963,6 +967,14 @@ export default function TechosModal({ onClose, onVolver }) {
                 style={{ position: "absolute", left: 0, top: 0 }}
               >
                 <Layer>
+                  <Rect
+                    x={0}
+                    y={0}
+                    width={stageWidth}
+                    height={stageHeight}
+                    fill="#050b18"
+                    listening={false}
+                  />
                   <Rect
                     x={margen + offsetX}
                     y={margen + offsetY}

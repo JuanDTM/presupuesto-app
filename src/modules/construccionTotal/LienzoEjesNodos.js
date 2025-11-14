@@ -1,11 +1,13 @@
+/* @jsxRuntime classic */
+/* @jsx React.createElement */
 // LienzoEjesNodos.js
 import React from "react";
 import { Stage, Layer, Line, Rect, Text } from "react-konva";
-import Cota from "./Cota";
-import MuroEntero from "./MuroEntero";
-import MuroVentana from "./MuroVentana";
-import MuroPuerta from "./MuroPuerta";
-import MuroPuertaVentana from "./MuroPuertaVentana";
+import Cota from "../../components/Cota";
+import MuroEntero from "../../components/MuroEntero";
+import MuroVentana from "../../components/MuroVentana";
+import MuroPuerta from "../../components/MuroPuerta";
+import MuroPuertaVentana from "../../components/MuroPuertaVentana";
 
 export default function LienzoEjesNodos({
   ancho,
@@ -29,12 +31,11 @@ export default function LienzoEjesNodos({
   cotas,
   muros
 }) {
-  // --- margen extra y offset para que todo se vea siempre ---
-    const extraMargin = Math.max(1000, Math.max(canvasWidth, canvasHeight) * 0.5);
-    const stageWidth = canvasWidth + extraMargin * 2;
-    const stageHeight = canvasHeight + extraMargin * 2;
-    const offsetX = extraMargin;
-    const offsetY = extraMargin;
+  const extraMargin = Math.max(420, Math.max(canvasWidth, canvasHeight) * 0.6);
+  const stageWidth = canvasWidth + extraMargin * 2;
+  const stageHeight = canvasHeight + extraMargin * 2;
+  const offsetX = extraMargin;
+  const offsetY = extraMargin;
 
   // Ejes principales (ajustados al margen y offset)
   const eje0 = { x1: margen + offsetX, y1: margen + offsetY, x2: margen + ancho * escala + offsetX, y2: margen + offsetY };
@@ -51,34 +52,27 @@ export default function LienzoEjesNodos({
     y: n.y + offsetY
   }));
 
-  // --- CONTENEDOR FIJO ---
-  // El contenedor siempre mide 900x600, el usuario navega con scroll y zoom
   return (
-    <div
-      style={{
-        width: 1200,
-        height: 600,
-        overflow: "auto",
-        border: "1px solid #aaa",
-        background: "#fff",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        marginBottom: 16,
-        position: "relative",
-        cursor: spacePressed ? (isPanning ? "grabbing" : "grab") : "default"
-      }}
+    <Stage
+      width={stageWidth}
+      height={stageHeight}
+      scaleX={stageScale}
+      scaleY={stageScale}
+      x={stageX}
+      y={stageY}
+      onWheel={handleWheel}
       onMouseDown={handleMouseDown}
+      style={{ position: "absolute", left: 0, top: 0 }}
     >
-      <Stage
-        width={stageWidth}
-        height={stageHeight}
-        scaleX={stageScale}
-        scaleY={stageScale}
-        x={stageX}
-        y={stageY}
-        onWheel={handleWheel}
-        style={{ background: "#000", position: "absolute", left: 0, top: 0 }}
-      >
-        <Layer>
+      <Layer>
+        <Rect
+          x={0}
+          y={0}
+          width={stageWidth}
+          height={stageHeight}
+          fill="#050b18"
+          listening={false}
+        />
           {/* Borde del área útil */}
           <Rect
             x={margen + offsetX}
@@ -263,6 +257,5 @@ export default function LienzoEjesNodos({
                                                              
         </Layer>
       </Stage>
-    </div>
   );
 }
