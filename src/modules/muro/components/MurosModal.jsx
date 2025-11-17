@@ -192,48 +192,9 @@ export default function MurosModal({ onClose, onVolver }) {
     console.log("📤 Payload enviado:", JSON.stringify(payload, null, 2));
 
     try {
-      const res = await request(apiUrls.cotizacion.cotizarMuro, { method: 'POST', body: payload })
+      const data = await request(apiUrls.cotizacion.cotizarMuro, { method: 'POST', body: payload });
 
-      console.log("📥 Status de respuesta:", res.status);
-
-      if (!res.ok) {
-        let errorMsg = `Error ${res.status}`;
-        try {
-          let errorText = await res.text();
-          if (errorText.startsWith("a{")) {
-            errorText = errorText.substring(1);
-          }
-          const errorData = JSON.parse(errorText);
-          console.error("❌ Error de la API:", errorData);
-
-          if (errorData.message) {
-            errorMsg = errorData.message;
-          } else if (errorData.error) {
-            errorMsg = errorData.error;
-          } else if (errorData.errors) {
-            errorMsg = Object.values(errorData.errors).flat().join("\n");
-          } else {
-            errorMsg = JSON.stringify(errorData, null, 2);
-          }
-        } catch (e) {
-          console.error("Error al parsear respuesta:", e);
-          errorMsg = await res.text();
-        }
-
-        alert(`❌ Error al enviar la cotización:\n\n${errorMsg}`);
-        return;
-      }
-
-      let responseText = await res.text();
-      console.log("📥 Respuesta cruda:", responseText);
-
-      if (responseText.startsWith("a{")) {
-        console.warn("⚠️ Se detectó 'a' al inicio de la respuesta, limpiando...");
-        responseText = responseText.substring(1);
-      }
-
-      const data = JSON.parse(responseText);
-      console.log("✅ Respuesta API parseada:", data);
+      console.log("✅ Respuesta API recibida:", data);
       setUltimoMuroCotizado(merged);
       setCotizacion(data);
       alert("Cotización recibida con éxito ✅");
