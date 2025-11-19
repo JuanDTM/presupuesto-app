@@ -7,6 +7,7 @@ import VigasModal from "../modules/vigas/components/VigasModal";
 import ColumnasModal from "../modules/columnas/components/ColumnasModal";
 import CimientosModal from "../modules/cimientos/components/CimientosModal";
 import TechosModal from "../modules/cubierta/components/TechosModal";
+import HidraulicaModal from "../modules/hiraulicas/components/HidraulicaModal";
 
 const CATEGORIES = [
   {
@@ -58,6 +59,13 @@ const CATEGORIES = [
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgoR-ryvcl-ObNTckjhvgdlMzJ3cN--HOWPQ&s",
   },
+  {
+    id: "HIRAULICAS",
+    label: "Hidráulicas",
+    area: "hidraulicas",
+    image:
+      "https://obrascivilescia.com/wp-content/uploads/2023/05/instalaciones-hidraulicas.jpg",
+  },
 ];
 
 export default function ReformasModal({ visible, onClose }) {
@@ -79,6 +87,8 @@ export default function ReformasModal({ visible, onClose }) {
         return <CimientosModal onClose={onClose} onVolver={() => setOpcionSeleccionada(null)} />;
       case "CUBIERTA":
         return <TechosModal onClose={onClose} onVolver={() => setOpcionSeleccionada(null)} />;
+      case "HIRAULICAS":
+        return <HidraulicaModal onClose={onClose} onVolver={() => setOpcionSeleccionada(null)} />;
       default:
         return null;
     }

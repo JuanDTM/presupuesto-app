@@ -15,6 +15,7 @@ const apiUrls = {
     cotizarCimientos: '/cotizacion-cimientos',
     cotizarVigas: '/cotizacion-vigas',
     cotizarColumnas: '/cotizacion-columnas',
+    cotizarHidraulico: '/cotizacion-hidraulico'
   }
 };
 
