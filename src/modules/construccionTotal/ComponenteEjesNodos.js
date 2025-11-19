@@ -791,9 +791,9 @@ export default function ComponenteEjesNodos() {
           </p>
         </div>
         <div className={styles.headerActions}>
-          <button type="button" className={`${styles.button} ${styles.buttonGhost}`} onClick={centrarVista}>
+          {/* <button type="button" className={`${styles.button} ${styles.buttonGhost}`} onClick={centrarVista}>
             Centrar vista
-          </button>
+          </button> */}
           <button type="button" className={`${styles.button} ${styles.buttonDanger}`} onClick={limpiarDatos}>
             Limpiar datos
           </button>

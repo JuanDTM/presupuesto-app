@@ -106,33 +106,12 @@ export default function CieloRasoModal({ onClose, onVolver }) {
     console.log("📤 Payload enviado:", JSON.stringify(payload, null, 2));
 
     try {
-      const res = await request(apiUrls.cotizacion.cotizarCielo, {
+      const data = await request(apiUrls.cotizacion.cotizarCielo, {
         method: "POST",
         body: payload,
       });
 
-      if (!res.ok) {
-        let errorMsg = `Error ${res.status}`;
-        try {
-          let errorText = await res.text();
-          if (errorText.startsWith("a{")) errorText = errorText.substring(1);
-          const errorData = JSON.parse(errorText);
-
-          if (errorData.message) errorMsg = errorData.message;
-          else if (errorData.error) errorMsg = errorData.error;
-          else if (errorData.errors) errorMsg = Object.values(errorData.errors).flat().join("\n");
-        } catch (e) {
-          errorMsg = await res.text();
-        }
-
-        alert(`❌ Error:\n\n${errorMsg}`);
-        return;
-      }
-
-      let responseText = await res.text();
-      if (responseText.startsWith("a{")) responseText = responseText.substring(1);
-
-      const data = JSON.parse(responseText);
+      
       setCotizacion(data);
       alert("Cotización recibida ✅");
     } catch (err) {
