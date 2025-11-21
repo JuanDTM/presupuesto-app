@@ -126,7 +126,7 @@
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(3, 160px);
+  grid-template-rows: repeat(4, 160px);
   gap: 18px;
   max-width: 920px;
   margin: 0 auto;
@@ -230,6 +230,11 @@
 .bento-columnas {
   grid-column: 3;
   grid-row: 3;
+}
+
+.bento-hidraulica {
+  grid-column: 1 / span 3;
+  grid-row: 4;
 }
 
 .reformas-modal__footer {

@@ -62,7 +62,7 @@ const CATEGORIES = [
   {
     id: "HIRAULICAS",
     label: "Hidráulicas",
-    area: "hidraulicas",
+    area: "hidraulica",
     image:
       "https://obrascivilescia.com/wp-content/uploads/2023/05/instalaciones-hidraulicas.jpg",
   },

@@ -1,187 +1,507 @@
-/* ---------- Contenedor general ---------- */
 .hidraulica-modal {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  color: #000000;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 12px;
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 28px;
+  background: linear-gradient(162deg, #f7f8fb 0%, #eef2fa 100%);
+  border-radius: 24px;
+  box-shadow: inset 0 0 0 1px rgba(226, 231, 245, 0.6);
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-/* Header */
-.hidraulica-header {
+.hidraulica-modal--results {
+  padding: 32px;
+}
+
+.hidraulica-modal__header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 12px;
 }
-.hidraulica-header h1 {
+
+.hidraulica-modal__header h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #13203f;
+  letter-spacing: 0.04em;
+}
+
+.hidraulica-modal__hint {
+  margin: 0;
+  font-size: 14px;
+  color: #5c637a;
+  max-width: 620px;
+  line-height: 1.6;
+}
+
+.hidraulica-modal__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #7380a0;
+  font-weight: 600;
+}
+
+.hidraulica-sections {
+  display: grid;
+  gap: 24px;
+}
+
+.hidraulica-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 20px;
+  padding: 24px 26px;
+  box-shadow: 0 18px 46px -36px rgba(15, 30, 59, 0.45);
+  border: 1px solid rgba(214, 221, 239, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hidraulica-card--results {
+  gap: 24px;
+}
+
+.hidraulica-card h2 {
   margin: 0;
   font-size: 18px;
+  font-weight: 700;
+  color: #182445;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-.header-actions { display:flex; gap:8px; align-items:center; }
 
-/* Botones principales */
-.btn {
-  background: #1765b6;
+.hidraulica-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hidraulica-card__helper {
+  margin: 0;
+  font-size: 14px;
+  color: #5c637a;
+  line-height: 1.5;
+}
+
+/* Área de dibujo (Stage) */
+.hidraulica-stage-container {
+  width: 100%;
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(214, 221, 239, 0.9);
+  background: #05060a;
+  box-shadow: inset 0 0 0 1px rgba(226, 231, 245, 0.6);
+  position: relative;
+  min-height: 520px;
+}
+
+.hidraulica-stage-inner {
+  position: relative;
+  background: #05060a;
+  display: block;
+  flex-shrink: 0;
+}
+
+.hidraulica-stage-inner canvas {
+  border-radius: 0;
+  background: #05060a;
+  display: block;
+}
+
+/* Panel flotante de elementos hidráulicos */
+.hidraulica-elementos-flotante {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px -12px rgba(15, 30, 59, 0.5);
+  border: 1px solid rgba(214, 221, 239, 0.9);
+  overflow: hidden;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.hidraulica-elementos-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #1c53ff 0%, #0035b3 100%);
   color: #ffffff;
   border: none;
-  padding: 8px 10px;
-  border-radius: 6px;
   cursor: pointer;
+  font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.28);
-}
-.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
-
-.btn-ghost {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: #000000;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
+  transition: background 0.2s ease, transform 0.18s ease;
+  border-radius: 16px 16px 0 0;
 }
 
-/* Stage area (canvas) */
-.hidraulica-stage-area {
+.hidraulica-elementos-toggle:hover {
+  background: linear-gradient(135deg, #2a63ff 0%, #0045c3 100%);
+  transform: translateY(-1px);
+}
+
+.hidraulica-elementos-toggle-icon {
   display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  padding: 8px;
-  background: transparent;
-  border-radius: 8px;
-}
-
-/* Controls column */
-.hidraulica-controls {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  padding: 8px 6px;
-  /* Ensure solid background for controls area so buttons contrast */
-  background: rgba(8,12,18,0.02);
-  border-radius: 8px;
-  z-index: 50;
-}
-
-/* Dimensiones inputs */
-.dimensiones { display:flex; gap:8px; align-items:center; }
-.dimensiones label { display:flex; flex-direction:column; font-size:13px; color:#000000; }
-.dimensiones input {
-  padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);
-  background:#081018; color:#eaf6ff; width:120px; font-weight:600;
-}
-
-/* Zoom controls */
-.zoom-controls { display:flex; gap:8px; align-items:center; color:#000000 }
-
-/* ---------- Tipo botones (iconos) ---------- */
-/* Container */
-.tipo-botones {
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:center;
-  max-height:120px;
-  overflow-y:auto;
-  padding:6px;
-  margin-top:6px;
-  background: rgba(255,255,255,0.015); /* slight separation */
-  border-radius:8px;
-}
-
-/* Button */
-.tipo-btn {
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  min-width:96px;
-  background: linear-gradient(180deg, #0d1320 0%, #0b121a 100%);
-  border: 1px solid rgba(255,255,255,0.06);
-  color: #e6f5ff;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
-  box-shadow: 0 4px 14px rgba(2,6,12,0.45);
-  align-items: center;
-  justify-content: flex-start;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 18px;
   font-weight: 700;
+  line-height: 1;
+}
+
+.hidraulica-elementos-toggle-text {
+  flex: 1;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   font-size: 13px;
+}
+
+.hidraulica-elementos-panel {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.hidraulica-elementos-panel .hidraulica-tipo-botones {
+  margin-bottom: 12px;
+}
+
+.hidraulica-elementos-panel .hidraulica-placing-controls,
+.hidraulica-elementos-panel .hidraulica-editing-panel {
+  margin-top: 12px;
+}
+
+/* Campos de formulario */
+.hidraulica-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hidraulica-field label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #6a7590;
+  font-weight: 600;
+}
+
+.hidraulica-field input,
+.hidraulica-field select {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #d6dbe8;
+  background: #f6f8fc;
+  color: #172544;
+  font-size: 15px;
+  transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.hidraulica-field input:focus,
+.hidraulica-field select:focus {
+  border-color: #1c53ff;
+  box-shadow: 0 0 0 4px rgba(28, 83, 255, 0.15);
+  background: #ffffff;
+  outline: none;
+}
+
+.hidraulica-field--checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   text-transform: none;
-  z-index: 80;
+  letter-spacing: normal;
+  font-size: 15px;
+  color: #182445;
 }
 
-/* Hover and selected */
-.tipo-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(10,40,90,0.28);
-}
-.tipo-btn.selected {
-  background: linear-gradient(90deg, rgba(25,118,210,0.16), rgba(59,130,246,0.08));
-  border-color: rgba(25,118,210,0.34);
-  box-shadow: 0 12px 28px rgba(25,118,210,0.12);
+.hidraulica-field--checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
 }
 
-/* Icon image */
-.icono-img {
+.hidraulica-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px 20px;
+}
+
+/* Helpers */
+.hidraulica-helpers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  color: #5c637a;
+}
+
+/* Botones de elementos hidráulicos */
+.hidraulica-tipo-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.hidraulica-tipo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  min-width: 120px;
+  background: rgba(246, 248, 252, 0.85);
+  border: 1px solid rgba(214, 221, 239, 0.9);
+  color: #1f2a45;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.2s ease, border-color 0.2s ease;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.hidraulica-tipo-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px rgba(28, 83, 255, 0.3);
+  background: #ffffff;
+  border-color: #bcc6e8;
+}
+
+.hidraulica-tipo-btn.selected {
+  background: rgba(28, 83, 255, 0.12);
+  border-color: rgba(28, 83, 255, 0.3);
+  color: #1c53ff;
+  box-shadow: 0 4px 12px -8px rgba(28, 83, 255, 0.4);
+}
+
+.hidraulica-icono-img {
   width: 28px;
   height: 28px;
   object-fit: contain;
-  display:block;
-  filter: none !important;
-  opacity: 1 !important;
+  display: block;
 }
 
-/* Label (text inside button) */
-.tipo-label {
+.hidraulica-tipo-label {
   font-size: 13px;
-  color: #e6eef8;
-  font-weight: 700;
-  opacity: 1 !important;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+  color: inherit;
+  font-weight: 600;
 }
 
-/* If icons appear too small, enlarge */
-.tipo-btn img.icono-img { width:32px; height:32px; }
-
-/* Placing controls */
-.placing-controls { display:flex; gap:8px; align-items:center; }
-
-/* Ejes controls */
-.ejes-controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.lista-ejes ul { padding-left:16px; margin:6px 0; }
-.lista-ejes li { display:flex; gap:8px; align-items:center; }
-
-/* Imagen guia preview */
-.imagen-guia-control label { display:block; font-size:13px; color:#000000; }
-.imagen-guia-preview { margin-top:8px; max-width:180px; max-height:120px; border-radius:6px;
-  border:1px solid rgba(255,255,255,0.04);
+/* Controles de colocación */
+.hidraulica-placing-controls {
+  padding: 16px;
+  background: #f2f5ff;
+  border-radius: 14px;
+  border: 1px solid rgba(188, 198, 232, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Panel de edición (puntos) */
-.puntos-rotacion {
-  position: relative;
-  z-index: 90;
-  display:flex;
-  gap:8px;
-  align-items:center;
-  padding-top:6px;
-  background: rgba(255,255,255,0.01);
-  border-radius:6px;
-  padding: 8px;
+.hidraulica-placing-controls p {
+  margin: 0;
+  font-size: 14px;
+  color: #1e2d52;
 }
 
-/* Small buttons */
-.btn-small { padding:6px 8px; font-size:13px; }
+.hidraulica-placing-controls__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-/* Make sure the stage area floats above other content */
-.hidraulica-stage-area > canvas, .hidraulica-stage-area { z-index: 10; }
+/* Panel de edición */
+.hidraulica-editing-panel {
+  padding: 16px;
+  background: #fff4f2;
+  border-radius: 14px;
+  border: 1px solid rgba(209, 67, 82, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-/* Responsive tweaks */
-@media (max-width: 900px) {
-  .tipo-btn { min-width: 78px; padding:6px 8px; font-size:12px; }
-  .icono-img { width:24px; height:24px; }
+.hidraulica-editing-panel p {
+  margin: 0;
+  font-size: 14px;
+  color: #1e2d52;
+}
+
+.hidraulica-editing-panel__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Lista de ejes */
+.hidraulica-ejes-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #1f2a45;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Botones principales */
+.hidraulica-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.hidraulica-button {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.2s ease, color 0.2s ease;
+  background: linear-gradient(135deg, #1c53ff 0%, #0035b3 100%);
+  color: #ffffff;
+}
+
+.hidraulica-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px -28px rgba(28, 83, 255, 0.65);
+}
+
+.hidraulica-button:disabled {
+  background: linear-gradient(135deg, #9eadff 0%, #6d82d4 100%);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.hidraulica-button--secondary {
+  background: rgba(28, 83, 255, 0.12);
+  color: #1c53ff;
+  border: 1px solid rgba(28, 83, 255, 0.3);
+}
+
+.hidraulica-button--secondary:hover {
+  background: rgba(28, 83, 255, 0.18);
+}
+
+.hidraulica-button--ghost {
+  background: #e7eaf4;
+  color: #1c264f;
+  border: 1px solid rgba(207, 214, 233, 0.6);
+}
+
+.hidraulica-button--ghost:hover {
+  background: #dfe3f0;
+}
+
+.hidraulica-button--danger {
+  background: rgba(209, 67, 82, 0.12);
+  color: #c23645;
+  border: 1px solid rgba(209, 67, 82, 0.3);
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.hidraulica-button--danger:hover {
+  background: rgba(209, 67, 82, 0.2);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Vista de resultados */
+.hidraulica-results {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hidraulica-results__log {
+  margin: 0;
+  background: #0f1e3d;
+  color: #dbe6ff;
+  padding: 18px;
+  border-radius: 16px;
+  font-family: "Fira Code", "Roboto Mono", monospace;
+  font-size: 13px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 0 1px rgba(43, 62, 110, 0.35);
+}
+
+.hidraulica-results__summary {
+  display: grid;
+  gap: 12px;
+  background: #f2f5ff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(188, 198, 232, 0.6);
+}
+
+.hidraulica-results__summary p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 15px;
+  color: #1e2d52;
+}
+
+.hidraulica-results__summary span {
+  opacity: 0.75;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .hidraulica-modal {
+    padding: 24px;
+  }
+
+  .hidraulica-card {
+    padding: 22px;
+  }
+
+  .hidraulica-actions {
+    justify-content: flex-start;
+  }
+
+  .hidraulica-stage-inner {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hidraulica-modal {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+
+  .hidraulica-tipo-botones {
+    justify-content: center;
+  }
+
+  .hidraulica-tipo-btn {
+    min-width: 100px;
+    padding: 8px 12px;
+  }
+
+  .hidraulica-actions {
+    flex-direction: column;
+  }
+
+  .hidraulica-actions .hidraulica-button {
+    width: 100%;
+  }
 }

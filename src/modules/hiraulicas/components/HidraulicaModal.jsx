@@ -107,6 +107,9 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
     // selección de punto para mover / rotar
     const [selectedPointId, setSelectedPointId] = useState(null);
 
+    // estado para mostrar/ocultar el panel de elementos hidráulicos
+    const [showElementosPanel, setShowElementosPanel] = useState(false);
+
     // opciones adicionales
     const [tienePiso, setTienePiso] = useState(true);
     const [tieneResane, setTieneResane] = useState(false);
@@ -153,6 +156,17 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
     };
   }, []);
   // ------------------------------------------------
+
+  /* Calcular tamaño dinámico del stage basado en dimensiones del plano */
+  const stageSize = useMemo(() => {
+    const anchoPx = margen * 2 + ancho * escalaBase;
+    const largoPx = margen * 2 + largo * escalaBase;
+    // Asegurar un tamaño mínimo para que el canvas sea usable
+    return {
+      width: Math.max(anchoPx, baseStageWidth),
+      height: Math.max(largoPx, baseStageHeight),
+    };
+  }, [ancho, largo]);
 
   /* Ejes principales (rectángulo que delimita área) */
   const ejesPrincipales = useMemo(() => {
@@ -213,14 +227,14 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
     if (!stage) return;
     const oldScale = stage.scaleX() || 1;
     const newScale = Math.min(oldScale * 1.15, 3);
-    applyStageZoom(stage, newScale, { x: baseStageWidth / 2, y: baseStageHeight / 2 });
+    applyStageZoom(stage, newScale, { x: stageSize.width / 2, y: stageSize.height / 2 });
   };
   const zoomOut = () => {
     const stage = stageRef.current;
     if (!stage) return;
     const oldScale = stage.scaleX() || 1;
     const newScale = Math.max(oldScale / 1.15, 0.4);
-    applyStageZoom(stage, newScale, { x: baseStageWidth / 2, y: baseStageHeight / 2 });
+    applyStageZoom(stage, newScale, { x: stageSize.width / 2, y: stageSize.height / 2 });
   };
   const handleWheel = (e) => {
     e.evt.preventDefault();
@@ -239,8 +253,18 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
   const handleMouseMove = (e) => {
     if (!placingPoint) return;
     const stage = e.target.getStage();
-    const pos = stage.getPointerPosition();
-    if (!pos) return;
+    if (!stage) return;
+    // Obtener posición del cursor relativa al stage (sin transformaciones de zoom/pan)
+    const pos = stage.getRelativePointerPosition();
+    if (!pos) {
+      // Fallback a getPointerPosition si getRelativePointerPosition no funciona
+      const fallbackPos = stage.getPointerPosition();
+      if (fallbackPos) {
+        setPlacingPoint((p) => ({ ...p, x: fallbackPos.x, y: fallbackPos.y }));
+      }
+      return;
+    }
+    // Centrar el elemento con el cursor
     setPlacingPoint((p) => ({ ...p, x: pos.x, y: pos.y }));
   };
 
@@ -275,6 +299,12 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
         return { ...p, rotation: opciones[siguienteIndex] };
       })
     );
+  };
+  const eliminarPunto = (id) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
+      setPuntos((prev) => prev.filter((p) => p.id !== id));
+      setSelectedPointId(null);
+    }
   };
 
   /* Attach transformer to selected node */
@@ -349,6 +379,8 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
         ejesSecundarios,
         ancho,
         largo,
+        tienePiso,
+        tieneResane,
         payload,
       });
       alert("Cotización hidráulica recibida ✅");
@@ -400,7 +432,7 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
   /* Seleccionado actual */
   const selectedPoint = puntos.find((p) => p.id === selectedPointId) || null;
 
-  /* Si ya llegó una cotización, mostrar la vista de resultados (igual que Cimientos) */
+  /* Si ya llegó una cotización, mostrar la vista de resultados */
   if (cotizacion) {
     return (
       <div className="hidraulica-modal hidraulica-modal--results">
@@ -409,13 +441,14 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
             <div>
               <p className="hidraulica-modal__eyebrow">Resumen de cotización</p>
               <h1>Cotización Hidráulica</h1>
-              <p className="hidraulica-modal__hint">Descarga el detalle o reinicia con nuevos parámetros cuando lo necesites.</p>
+              <p className="hidraulica-modal__hint">
+                Descarga el detalle o reinicia con nuevos parámetros cuando lo necesites.
+              </p>
             </div>
           </header>
 
           <div className="hidraulica-results">
             <pre className="hidraulica-results__log">{cotizacion.mano_obra}</pre>
-
             <div className="hidraulica-results__summary">
               <p>
                 <span>Valor total mano de obra</span>
@@ -433,13 +466,21 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
           </div>
 
           <div className="hidraulica-actions">
-            <button onClick={descargarPDF} className="hidraulica-button hidraulica-button--secondary" type="button">
+            <button
+              onClick={descargarPDF}
+              className="hidraulica-button hidraulica-button--secondary"
+              type="button"
+            >
               Descargar PDF
             </button>
             <button onClick={resetFormulario} className="hidraulica-button" type="button">
               Nueva cotización
             </button>
-            <button onClick={onClose} className="hidraulica-button hidraulica-button--ghost" type="button">
+            <button
+              onClick={onClose}
+              className="hidraulica-button hidraulica-button--ghost"
+              type="button"
+            >
               Cerrar
             </button>
           </div>
@@ -451,275 +492,456 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
   /* Render principal (dibujo + controles) */
   return (
     <div className="hidraulica-modal">
-      <header className="hidraulica-header">
-        <button className="btn-ghost" onClick={onVolver}>Volver</button>
-        <h1>Cotización Hidráulica</h1>
-        <div className="header-actions">
-          <button className="btn" onClick={enviarCotizacion} disabled={isSubmitting}>
-            {isSubmitting ? "Enviando..." : "Enviar cotización"}
+      <header className="hidraulica-modal__header">
+        <div>
+          <button onClick={onVolver} className="hidraulica-button hidraulica-button--ghost" type="button">
+            Volver
           </button>
-          <button className="btn-ghost" onClick={onClose}>Cerrar</button>
+          <h1>Cotización Hidráulica</h1>
+          <p className="hidraulica-modal__hint">
+            Define las dimensiones y coloca elementos hidráulicos en el plano para obtener la estimación del sistema.
+          </p>
         </div>
       </header>
 
-      <section className="hidraulica-stage-area">
-        <Stage
-          width={baseStageWidth}
-          height={baseStageHeight}
-          onWheel={handleWheel}
-          ref={stageRef}
-          onMouseMove={handleMouseMove}
-          onClick={handleStageClick}
-          style={{
-            background: "#05060a",
-            borderRadius: 8,
-            cursor: placingPoint ? "crosshair" : "grab",
-            userSelect: "none",
-          }}
-          draggable={!placingPoint}
-          onDragStart={(e) => e.target.getStage().container().style.cursor = "grabbing"}
-          onDragEnd={(e) => e.target.getStage().container().style.cursor = "grab"}
-        >
-          <Layer>
-            <Rect x={0} y={0} width={baseStageWidth} height={baseStageHeight} fill="#05060a" />
-
-            {/* Ejes principales */}
-            {ejesPrincipales.map((e, i) => (
-              <Line key={`p-${i}`} points={[e.x1, e.y1, e.x2, e.y2]} stroke="#1976d2" strokeWidth={4} />
-            ))}
-
-            {/* Ejes secundarios */}
-            {ejesSecundarios.map((e, i) => {
-              const vertical = e.orientacion === "V";
-              const x = vertical ? margen + e.distancia * escalaBase : margen;
-              const y = vertical ? margen : margen + e.distancia * escalaBase;
-              const x2 = vertical ? x : margen + ancho * escalaBase;
-              const y2 = vertical ? margen + largo * escalaBase : y;
-              return <Line key={`s-${i}`} points={[x, y, x2, y2]} stroke="#43a047" strokeWidth={2} dash={[8, 8]} />;
-            })}
-
-            {/* Imagen guía opcional (no incluida por defecto) */}
-
-            {/* Icono flotante mientras se coloca */}
-            {placingPoint && (
-              imagesMap[placingPoint.tipo] ? (
-                <KonvaImage
-                  image={imagesMap[placingPoint.tipo]}
-                  x={placingPoint.x}
-                  y={placingPoint.y}
-                  width={getSizePx(placingPoint.tipo)[0]}
-                  height={getSizePx(placingPoint.tipo)[1]}
-                  rotation={placingPoint.rotation || 0}
-                  offsetX={getSizePx(placingPoint.tipo)[0] / 2}
-                  offsetY={getSizePx(placingPoint.tipo)[1] / 2}
-                  opacity={0.8}
-                  listening={false}
+      <div className="hidraulica-sections">
+        {/* Card: Dimensiones y configuración */}
+        <section className="hidraulica-card">
+          <h2>Dimensiones principales</h2>
+          <div className="hidraulica-grid">
+            <div className="hidraulica-field">
+              <label htmlFor="hidraulica-ancho">Ancho (cm)</label>
+              <input
+                id="hidraulica-ancho"
+                type="number"
+                min={50}
+                max={5000}
+                value={ancho}
+                onChange={(e) => setAncho(Number(e.target.value))}
+              />
+            </div>
+            <div className="hidraulica-field">
+              <label htmlFor="hidraulica-largo">Largo (cm)</label>
+              <input
+                id="hidraulica-largo"
+                type="number"
+                min={50}
+                max={5000}
+                value={largo}
+                onChange={(e) => setLargo(Number(e.target.value))}
+              />
+            </div>
+            <div className="hidraulica-field hidraulica-field--checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={tienePiso}
+                  onChange={(e) => setTienePiso(e.target.checked)}
                 />
-              ) : (
-                <Group x={placingPoint.x} y={placingPoint.y} offsetX={40} offsetY={14}>
-                  <Rect width={80} height={28} fill="#666" cornerRadius={6} opacity={0.9} />
-                  <Text text={`Cargando ${placingPoint.tipo}`} fontSize={12} fill="#fff" padding={6} />
-                </Group>
-              )
-            )}
-
-            {/* Puntos colocados */}
-            {puntos.map((p) => (
-              <Group
-                key={p.id}
-                id={`point-${p.id}`}
-                x={p.x}
-                y={p.y}
-                rotation={p.rotation || 0}
-                draggable
-                onDragMove={(e) => moverPunto(p.id, e.target.x(), e.target.y())}
-                onClick={(e) => {
-                  e.cancelBubble = true;
-                  seleccionarPunto(p.id);
-                }}
-              >
-                {imagesMap[p.tipo] ? (
-                  <KonvaImage
-                    image={imagesMap[p.tipo]}
-                    width={getSizePx(p.tipo)[0]}
-                    height={getSizePx(p.tipo)[1]}
-                    offsetX={getSizePx(p.tipo)[0] / 2}
-                    offsetY={getSizePx(p.tipo)[1] / 2}
-                  />
-                ) : (
-                  <Group offsetX={40} offsetY={14}>
-                    <Rect width={80} height={28} fill="#444" cornerRadius={6} />
-                    <Text text={p.tipo} fontSize={12} fill="#fff" padding={6} />
-                  </Group>
-                )}
-              </Group>
-            ))}
-
-            {/* Botón on-canvas para rotar sobre el punto seleccionado */}
-            {selectedPoint && (
-              <Group
-                x={selectedPoint.x}
-                y={selectedPoint.y - (getSizePx(selectedPoint.tipo)[1] / 2) - 24}
-                onClick={(e) => {
-                  e.cancelBubble = true;
-                  rotarPunto(selectedPoint.id);
-                }}
-                onMouseEnter={(e) => {
-                  e.target.getStage().container().style.cursor = "pointer";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.getStage().container().style.cursor = placingPoint ? "crosshair" : "grab";
-                }}
-                listening={true}
-              >
-                <Circle radius={14} fill="#1976d2" stroke="#fff" strokeWidth={1.4} shadowColor="#000" shadowBlur={6} />
-                <Text text="⤾" fontSize={14} fill="#fff" offsetX={6} offsetY={7} />
-              </Group>
-            )}
-
-            <Transformer
-              ref={trRef}
-              rotateEnabled={false}
-              enabledAnchors={[]}
-              boundBoxFunc={(oldBox, newBox) => oldBox}
-            />
-          </Layer>
-        </Stage>
-      </section>
-
-      <section className="hidraulica-controls">
-        <div className="dimensiones">
-          <label>
-            Ancho (cm)
-            <input type="number" min={50} max={5000} value={ancho} onChange={(e) => setAncho(Number(e.target.value))} />
-          </label>
-          <label>
-            Largo (cm)
-            <input type="number" min={50} max={5000} value={largo} onChange={(e) => setLargo(Number(e.target.value))} />
-          </label>
-        </div>
-        
-        {/* Controles de opciones adicionales */}
-        <div className="opciones-adicionales">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={tienePiso} 
-              onChange={(e) => setTienePiso(e.target.checked)} 
-            />
-            Incluir piso
-          </label>
-          <label>
-            <input 
-              type="checkbox" 
-              checked={tieneResane} 
-              onChange={(e) => setTieneResane(e.target.checked)} 
-            />
-            Incluir resane
-          </label>
-        </div>
-
-        <div className="zoom-controls">
-          <button className="btn" onClick={zoomIn}>+</button>
-          <button className="btn" onClick={zoomOut}>-</button>
-          <span>Zoom: {zoomPct}%</span>
-        </div>
-
-        <div className="tipo-botones">
-          {Object.keys(ICONS_PATHS).map((tipo) => (
-            <button
-              key={tipo}
-              className={`tipo-btn ${placingPoint?.tipo === tipo ? "selected" : ""}`}
-              onClick={() => {
-                if (!imagesMap[tipo]) {
-                  console.log(`Imagen "${tipo}" aun no lista; se mostrará placeholder hasta que cargue.`);
-                }
-                setPlacingPoint({ tipo, x: baseStageWidth / 2, y: baseStageHeight / 2, rotation: 0 });
-                setSelectedPointId(null);
-              }}
-              title={tipo}
-              type="button"
-            >
-              <img src={ICONS_PATHS[tipo]} alt={tipo} className="icono-img" />
-              <span className="tipo-label">{tipo}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Controles de colocación */}
-        {placingPoint && (
-          <div className="placing-controls">
-            <p>Colocando: {placingPoint.tipo}</p>
-            <button className="btn" type="button" onClick={() => {
-              const opciones = ROTATION_OPTIONS[placingPoint.tipo] || [0];
-              const actualIndex = opciones.indexOf(placingPoint.rotation || 0);
-              const siguienteIndex = (actualIndex + 1) % opciones.length;
-              setPlacingPoint({ ...placingPoint, rotation: opciones[siguienteIndex] });
-            }}>Rotar</button>
-            <button className="btn" type="button" onClick={() => {
-              if (placingPoint.x < margen || placingPoint.x > margen + ancho * escalaBase || placingPoint.y < margen || placingPoint.y > margen + largo * escalaBase) {
-                alert("El punto debe quedar dentro del área de dibujo");
-                return;
-              }
-              setPuntos((prev) => [...prev, { ...placingPoint, id: Date.now() }]);
-              setPlacingPoint(null);
-            }}>Aceptar</button>
-            <button className="btn-ghost" type="button" onClick={() => setPlacingPoint(null)}>Cancelar</button>
+                Incluir piso
+              </label>
+            </div>
+            <div className="hidraulica-field hidraulica-field--checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={tieneResane}
+                  onChange={(e) => setTieneResane(e.target.checked)}
+                />
+                Incluir resane
+              </label>
+            </div>
           </div>
-        )}
+        </section>
 
-        <div className="ejes-controls">
-          <label>
-            Orientación
-            <select value={nuevoEjeOrientacion} onChange={(e) => setNuevoEjeOrientacion(e.target.value)}>
-              <option value="V">Vertical</option>
-              <option value="H">Horizontal</option>
-            </select>
-          </label>
-          <label>
-            Distancia (cm)
-            <input type="number" step="0.1" value={nuevoEjeDistancia} onChange={(e) => setNuevoEjeDistancia(e.target.value)} />
-          </label>
-          <button className="btn" onClick={agregarEje} type="button">Agregar eje</button>
-          <button className="btn-ghost" onClick={() => setEjesSecundarios([])} type="button">Limpiar ejes</button>
-        </div>
+        {/* Card: Elementos hidráulicos - Removido, ahora está en el panel flotante */}
 
-        <div className="lista-ejes">
-          <h4>Ejes secundarios</h4>
-          {ejesSecundarios.length === 0 ? (
-            <p>No hay ejes agregados</p>
-          ) : (
-            <ul>
+        {/* Card: Ejes secundarios */}
+        <section className="hidraulica-card">
+          <div className="hidraulica-card__header">
+            <h2>Ejes secundarios</h2>
+            <p className="hidraulica-card__helper">
+              Configura ejes adicionales para dividir el área en secciones de referencia (verticales o horizontales).
+            </p>
+          </div>
+          <div className="hidraulica-grid">
+            <div className="hidraulica-field">
+              <label htmlFor="hidraulica-eje-orientacion">Orientación</label>
+              <select
+                id="hidraulica-eje-orientacion"
+                value={nuevoEjeOrientacion}
+                onChange={(e) => setNuevoEjeOrientacion(e.target.value)}
+              >
+                <option value="V">Vertical</option>
+                <option value="H">Horizontal</option>
+              </select>
+            </div>
+            <div className="hidraulica-field">
+              <label htmlFor="hidraulica-eje-distancia">Distancia (cm)</label>
+              <input
+                id="hidraulica-eje-distancia"
+                type="number"
+                step="0.1"
+                value={nuevoEjeDistancia}
+                onChange={(e) => setNuevoEjeDistancia(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="hidraulica-actions">
+            <button className="hidraulica-button hidraulica-button--secondary" onClick={agregarEje} type="button">
+              Añadir eje
+            </button>
+            {ejesSecundarios.length > 0 && (
+              <button
+                className="hidraulica-button hidraulica-button--danger"
+                onClick={() => {
+                  if (window.confirm("¿Estás seguro de limpiar todos los ejes secundarios?")) {
+                    setEjesSecundarios([]);
+                  }
+                }}
+                type="button"
+              >
+                Limpiar ejes
+              </button>
+            )}
+          </div>
+          {ejesSecundarios.length > 0 ? (
+            <ul className="hidraulica-ejes-list">
               {ejesSecundarios.map((e, i) => (
                 <li key={i}>
-                  {e.orientacion === "V" ? "Vertical" : "Horizontal"} — {e.distancia} cm
-                  <button className="btn-small btn-ghost" type="button" onClick={() => eliminarEje(i)}>Quitar</button>
+                  {e.orientacion === "V" ? "Vertical" : "Horizontal"} a {e.distancia} cm
+                  <button
+                    className="hidraulica-button hidraulica-button--ghost"
+                    type="button"
+                    style={{ marginLeft: 12, padding: "6px 12px" }}
+                    onClick={() => eliminarEje(i)}
+                  >
+                    Quitar
+                  </button>
                 </li>
               ))}
             </ul>
-          )}
-        </div>
-
-        {/* Panel de edición siempre visible en controles */}
-        <div className="puntos-rotacion" style={{ marginTop: 8 }}>
-          {selectedPointId ? (
-            <>
-              <div style={{ minWidth: 160 }}>
-                <strong>Editar:</strong> {selectedPoint?.tipo} (id {selectedPointId})
-              </div>
-              <button className="btn" onClick={() => rotarPunto(selectedPointId)} type="button">Rotar</button>
-              <button className="btn-ghost" onClick={() => setSelectedPointId(null)} type="button">Cerrar edición</button>
-            </>
           ) : (
-            <div>No hay punto seleccionado</div>
+            <p className="hidraulica-card__helper">
+              Aún no has agregado ejes secundarios. Puedes dejarlo vacío si no los necesitas.
+            </p>
           )}
-        </div>
+        </section>
 
-        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-          <button className="btn" onClick={resetFormulario} type="button">Limpiar diseño</button>
-          <button className="btn-ghost" onClick={onVolver} type="button">Volver</button>
-        </div>
-      </section>
+        {/* Card: Vista previa interactiva */}
+        <section className="hidraulica-card">
+          <h2>Vista previa interactiva</h2>
+          <div className="hidraulica-helpers">
+            <span>🖱️ Haz clic en un elemento para seleccionarlo y luego arrastra para moverlo.</span>
+            <span>🔍 Usa la rueda del mouse para hacer zoom.</span>
+            <span>🔄 Haz clic en el botón de rotación para cambiar la orientación de un elemento.</span>
+          </div>
+          <div className="hidraulica-stage-container">
+            {/* Panel flotante de elementos hidráulicos */}
+            <div className="hidraulica-elementos-flotante">
+              <button
+                className="hidraulica-elementos-toggle"
+                onClick={() => setShowElementosPanel(!showElementosPanel)}
+                type="button"
+              >
+                <span className="hidraulica-elementos-toggle-icon">
+                  {showElementosPanel ? "−" : "+"}
+                </span>
+                <span className="hidraulica-elementos-toggle-text">Elementos hidráulicos</span>
+              </button>
+              
+              {showElementosPanel && (
+                <div className="hidraulica-elementos-panel">
+                  <div className="hidraulica-tipo-botones">
+                    {Object.keys(ICONS_PATHS).map((tipo) => (
+                      <button
+                        key={tipo}
+                        className={`hidraulica-tipo-btn ${placingPoint?.tipo === tipo ? "selected" : ""}`}
+                        onClick={() => {
+                          if (!imagesMap[tipo]) {
+                            console.log(`Imagen "${tipo}" aun no lista; se mostrará placeholder hasta que cargue.`);
+                          }
+                          // Intentar obtener la posición actual del cursor en el stage
+                          const stage = stageRef.current;
+                          let initialX = stageSize.width / 2;
+                          let initialY = stageSize.height / 2;
+                          if (stage) {
+                            // Intentar primero con getRelativePointerPosition
+                            const pointerPos = stage.getRelativePointerPosition();
+                            if (pointerPos) {
+                              initialX = pointerPos.x;
+                              initialY = pointerPos.y;
+                            } else {
+                              // Fallback a getPointerPosition
+                              const fallbackPos = stage.getPointerPosition();
+                              if (fallbackPos) {
+                                initialX = fallbackPos.x;
+                                initialY = fallbackPos.y;
+                              }
+                            }
+                          }
+                          setPlacingPoint({ tipo, x: initialX, y: initialY, rotation: 0 });
+                          setSelectedPointId(null);
+                        }}
+                        title={tipo}
+                        type="button"
+                      >
+                        <img src={ICONS_PATHS[tipo]} alt={tipo} className="hidraulica-icono-img" />
+                        <span className="hidraulica-tipo-label">{tipo}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Controles de colocación */}
+                  {placingPoint && (
+                    <div className="hidraulica-placing-controls">
+                      <p><strong>Colocando:</strong> {placingPoint.tipo}</p>
+                      <div className="hidraulica-placing-controls__actions">
+                        <button
+                          className="hidraulica-button hidraulica-button--secondary"
+                          type="button"
+                          onClick={() => {
+                            const opciones = ROTATION_OPTIONS[placingPoint.tipo] || [0];
+                            const actualIndex = opciones.indexOf(placingPoint.rotation || 0);
+                            const siguienteIndex = (actualIndex + 1) % opciones.length;
+                            setPlacingPoint({ ...placingPoint, rotation: opciones[siguienteIndex] });
+                          }}
+                        >
+                          Rotar
+                        </button>
+                        <button
+                          className="hidraulica-button"
+                          type="button"
+                          onClick={() => {
+                            if (placingPoint.x < margen || placingPoint.x > margen + ancho * escalaBase || placingPoint.y < margen || placingPoint.y > margen + largo * escalaBase) {
+                              alert("El punto debe quedar dentro del área de dibujo");
+                              return;
+                            }
+                            setPuntos((prev) => [...prev, { ...placingPoint, id: Date.now() }]);
+                            setPlacingPoint(null);
+                          }}
+                        >
+                          Aceptar
+                        </button>
+                        <button
+                          className="hidraulica-button hidraulica-button--ghost"
+                          type="button"
+                          onClick={() => setPlacingPoint(null)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Panel de edición de punto seleccionado */}
+                  {selectedPointId && (
+                    <div className="hidraulica-editing-panel">
+                      <p><strong>Editando:</strong> {selectedPoint?.tipo}</p>
+                      <div className="hidraulica-editing-panel__actions">
+                        <button
+                          className="hidraulica-button hidraulica-button--secondary"
+                          onClick={() => rotarPunto(selectedPointId)}
+                          type="button"
+                        >
+                          Rotar
+                        </button>
+                        <button
+                          className="hidraulica-button hidraulica-button--danger"
+                          onClick={() => eliminarPunto(selectedPointId)}
+                          type="button"
+                        >
+                          Remover
+                        </button>
+                        <button
+                          className="hidraulica-button hidraulica-button--ghost"
+                          onClick={() => setSelectedPointId(null)}
+                          type="button"
+                        >
+                          Cerrar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div 
+              className="hidraulica-stage-inner"
+              style={{
+                width: `${stageSize.width}px`,
+                height: `${stageSize.height}px`,
+              }}
+            >
+              <Stage
+                width={stageSize.width}
+                height={stageSize.height}
+                onWheel={handleWheel}
+                ref={stageRef}
+                onMouseMove={handleMouseMove}
+                onClick={handleStageClick}
+                style={{
+                  cursor: placingPoint ? "crosshair" : "grab",
+                  userSelect: "none",
+                }}
+                draggable={!placingPoint}
+                onDragStart={(e) => e.target.getStage().container().style.cursor = "grabbing"}
+                onDragEnd={(e) => e.target.getStage().container().style.cursor = "grab"}
+              >
+              <Layer>
+                {/* Fondo negro que cubre todo el área visible y más allá para zoom */}
+                <Rect 
+                  x={-stageSize.width * 2} 
+                  y={-stageSize.height * 2} 
+                  width={stageSize.width * 5} 
+                  height={stageSize.height * 5} 
+                  fill="#05060a" 
+                  listening={false} 
+                />
+
+                {/* Ejes principales */}
+                {ejesPrincipales.map((e, i) => (
+                  <Line key={`p-${i}`} points={[e.x1, e.y1, e.x2, e.y2]} stroke="#1976d2" strokeWidth={4} />
+                ))}
+
+                {/* Ejes secundarios */}
+                {ejesSecundarios.map((e, i) => {
+                  const vertical = e.orientacion === "V";
+                  const x = vertical ? margen + e.distancia * escalaBase : margen;
+                  const y = vertical ? margen : margen + e.distancia * escalaBase;
+                  const x2 = vertical ? x : margen + ancho * escalaBase;
+                  const y2 = vertical ? margen + largo * escalaBase : y;
+                  return <Line key={`s-${i}`} points={[x, y, x2, y2]} stroke="#43a047" strokeWidth={2} dash={[8, 8]} />;
+                })}
+
+                {/* Icono flotante mientras se coloca */}
+                {placingPoint && (
+                  imagesMap[placingPoint.tipo] ? (
+                    <KonvaImage
+                      image={imagesMap[placingPoint.tipo]}
+                      x={placingPoint.x}
+                      y={placingPoint.y}
+                      width={getSizePx(placingPoint.tipo)[0]}
+                      height={getSizePx(placingPoint.tipo)[1]}
+                      rotation={placingPoint.rotation || 0}
+                      offsetX={getSizePx(placingPoint.tipo)[0] / 2}
+                      offsetY={getSizePx(placingPoint.tipo)[1] / 2}
+                      opacity={0.8}
+                      listening={false}
+                    />
+                  ) : (
+                    <Group x={placingPoint.x} y={placingPoint.y} offsetX={40} offsetY={14}>
+                      <Rect width={80} height={28} fill="#666" cornerRadius={6} opacity={0.9} />
+                      <Text text={`Cargando ${placingPoint.tipo}`} fontSize={12} fill="#fff" padding={6} />
+                    </Group>
+                  )
+                )}
+
+                {/* Puntos colocados */}
+                {puntos.map((p) => (
+                  <Group
+                    key={p.id}
+                    id={`point-${p.id}`}
+                    x={p.x}
+                    y={p.y}
+                    rotation={p.rotation || 0}
+                    draggable
+                    onDragMove={(e) => moverPunto(p.id, e.target.x(), e.target.y())}
+                    onClick={(e) => {
+                      e.cancelBubble = true;
+                      seleccionarPunto(p.id);
+                    }}
+                  >
+                    {imagesMap[p.tipo] ? (
+                      <KonvaImage
+                        image={imagesMap[p.tipo]}
+                        width={getSizePx(p.tipo)[0]}
+                        height={getSizePx(p.tipo)[1]}
+                        offsetX={getSizePx(p.tipo)[0] / 2}
+                        offsetY={getSizePx(p.tipo)[1] / 2}
+                      />
+                    ) : (
+                      <Group offsetX={40} offsetY={14}>
+                        <Rect width={80} height={28} fill="#444" cornerRadius={6} />
+                        <Text text={p.tipo} fontSize={12} fill="#fff" padding={6} />
+                      </Group>
+                    )}
+                  </Group>
+                ))}
+
+                {/* Botón on-canvas para rotar sobre el punto seleccionado */}
+                {selectedPoint && (
+                  <Group
+                    x={selectedPoint.x}
+                    y={selectedPoint.y - (getSizePx(selectedPoint.tipo)[1] / 2) - 24}
+                    onClick={(e) => {
+                      e.cancelBubble = true;
+                      rotarPunto(selectedPoint.id);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.getStage().container().style.cursor = "pointer";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.getStage().container().style.cursor = placingPoint ? "crosshair" : "grab";
+                    }}
+                    listening={true}
+                  >
+                    <Circle radius={14} fill="#1976d2" stroke="#fff" strokeWidth={1.4} shadowColor="#000" shadowBlur={6} />
+                    <Text text="⤾" fontSize={14} fill="#fff" offsetX={6} offsetY={7} />
+                  </Group>
+                )}
+
+                <Transformer
+                  ref={trRef}
+                  rotateEnabled={false}
+                  enabledAnchors={[]}
+                  boundBoxFunc={(oldBox, newBox) => oldBox}
+                />
+              </Layer>
+            </Stage>
+            </div>
+          </div>
+          <div className="hidraulica-actions">
+            <button
+              type="button"
+              onClick={zoomIn}
+              className="hidraulica-button hidraulica-button--secondary"
+            >
+              Zoom +
+            </button>
+            <button
+              type="button"
+              onClick={zoomOut}
+              className="hidraulica-button hidraulica-button--secondary"
+            >
+              Zoom -
+            </button>
+            <span>Zoom: {zoomPct}%</span>
+          </div>
+        </section>
+      </div>
+
+      <div className="hidraulica-actions">
+        <button
+          className="hidraulica-button"
+          onClick={enviarCotizacion}
+          disabled={isSubmitting}
+          type="button"
+        >
+          {isSubmitting ? "Enviando..." : "Enviar cotización"}
+        </button>
+        <button
+          className="hidraulica-button hidraulica-button--secondary"
+          onClick={resetFormulario}
+          type="button"
+        >
+          Limpiar diseño
+        </button>
+        <button onClick={onVolver} className="hidraulica-button hidraulica-button--ghost" type="button">
+          Volver
+        </button>
+      </div>
     </div>
   );
 }
