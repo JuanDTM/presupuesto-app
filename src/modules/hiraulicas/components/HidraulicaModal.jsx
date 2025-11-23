@@ -14,6 +14,7 @@ import { pdf } from "@react-pdf/renderer";
 import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import CotizacionHidraulicaPDF from "./CotizacionHidraulicaPDF";
+import { validateHidraulicaPayload } from "../validation/shemas";
 import "./HidraulicaModal.css";
 
 /**
@@ -325,63 +326,207 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
 
     /* Preparar payload para API basado en puntos / ejes / dimensiones */
     const prepararPayload = () => {
+      // Validar tipos de puntos permitidos
+      const tiposValidos = Object.keys(ICONS_PATHS);
+      
       // Convertir puntos a coordenadas en cm (restando margen)
-      const puntosEnCm = puntos.map((punto) => ({
-        id: punto.id,
-        tipo: punto.tipo,
-        x_cm: Number(pxToCm(punto.x - margen).toFixed(2)),
-        y_cm: Number(pxToCm(punto.y - margen).toFixed(2)),
-        rotation: punto.rotation || 0,
-      }));
+      const puntosEnCm = (puntos || [])
+        .filter((punto) => punto && punto.tipo && tiposValidos.includes(punto.tipo))
+        .map((punto) => {
+          const xCm = pxToCm(punto.x - margen);
+          const yCm = pxToCm(punto.y - margen);
+          // Asegurar que los valores sean números, redondeados a 2 decimales
+          const xCmNum = Math.round(xCm * 100) / 100;
+          const yCmNum = Math.round(yCm * 100) / 100;
+          return {
+            id: Number(punto.id),
+            tipo: String(punto.tipo),
+            x_cm: xCmNum,
+            y_cm: yCmNum,
+            rotation: Number(punto.rotation || 0),
+          };
+        });
   
-      // Convertir ejes secundarios a formato requerido
-      const ejesSecundariosFormateados = ejesSecundarios.map((eje) => ({
-        orientacion: eje.orientacion,
-        distancia_cm: Number(eje.distancia.toFixed(2)),
-      }));
+      // Convertir ejes secundarios a formato requerido - asegurar que no estén vacíos
+      const ejesSecundariosFormateados = (ejesSecundarios || [])
+        .filter((eje) => eje && eje.orientacion && eje.distancia != null)
+        .map((eje) => {
+          const distancia = Number(eje.distancia);
+          if (isNaN(distancia) || distancia <= 0) {
+            return null;
+          }
+          // Redondear a 2 decimales, pero mantener como número simple
+          const distanciaNum = Math.round(distancia * 100) / 100;
+          return {
+            orientacion: String(eje.orientacion).toUpperCase(),
+            distancia_cm: distanciaNum,
+          };
+        })
+        .filter((eje) => eje !== null && (eje.orientacion === "V" || eje.orientacion === "H"));
   
-      // Construir el objeto plano para un nivel
+      // Asegurar que los valores numéricos sean válidos
+      const anchoNum = Number(ancho);
+      const largoNum = Number(largo);
+      
+      if (isNaN(anchoNum) || anchoNum <= 0 || isNaN(largoNum) || largoNum <= 0) {
+        throw new Error("Las dimensiones del plano deben ser números mayores a 0");
+      }
+  
+      // Construir el objeto plano para un nivel - asegurar que todos los campos estén presentes
       const planoNivel = {
-        ancho_cm: ancho,
-        largo_cm: largo,
-        puntos: puntosEnCm,
-        ejes_secundarios: ejesSecundariosFormateados,
+        ancho_cm: anchoNum,
+        largo_cm: largoNum,
+        puntos: Array.isArray(puntosEnCm) ? puntosEnCm : [],
+        ejes_secundarios: Array.isArray(ejesSecundariosFormateados) ? ejesSecundariosFormateados : [],
       };
   
       // Construir el payload con el formato exacto requerido por la API
-      const payload = {
-        niveles: [
-          {
-            piso: tienePiso,
-            resane: tieneResane,
-            plano: planoNivel,
-          },
-        ],
+      // Asegurar que niveles sea siempre un array con al menos un elemento
+      const nivel = {
+        piso: tienePiso === true,
+        resane: tieneResane === true,
+        plano: planoNivel,
       };
+      
+      const payload = {
+        niveles: [nivel],
+      };
+  
+      // Validación final antes de retornar
+      if (!Array.isArray(payload.niveles) || payload.niveles.length === 0) {
+        throw new Error("El payload debe tener al menos un nivel");
+      }
+      
+      if (!payload.niveles[0].plano) {
+        throw new Error("El primer nivel debe tener un objeto plano");
+      }
+      
+      if (!Array.isArray(payload.niveles[0].plano.ejes_secundarios)) {
+        throw new Error("ejes_secundarios debe ser un array");
+      }
+      
+      if (!Array.isArray(payload.niveles[0].plano.puntos)) {
+        throw new Error("puntos debe ser un array");
+      }
   
       return payload;
     };
 
   /* Enviar cotización a la API */
   const enviarCotizacion = async () => {
+    // Validar que haya al menos un eje secundario antes de preparar el payload
+    if (!ejesSecundarios || ejesSecundarios.length === 0) {
+      alert("❌ Error de validación:\n\nSe requiere al menos un eje secundario para enviar la cotización.");
+      return;
+    }
+
+    // Validar que haya al menos un punto colocado
+    if (!puntos || puntos.length === 0) {
+      alert("❌ Error de validación:\n\nDebes colocar al menos un elemento hidráulico en el plano.");
+      return;
+    }
+
+    // Validar que haya al menos un punto que requiera agua caliente
+    const tieneAguaCaliente = puntos.some(p => AGUA_CALIENTE.includes(p.tipo));
+    if (!tieneAguaCaliente) {
+      alert("❌ Error de validación:\n\nDebes colocar al menos un elemento que requiera agua caliente (lavaplatos, lavamanos, lavadora, ducha o calentador).");
+      return;
+    }
+
+    // Validar que haya al menos un punto que requiera agua fría
+    const tieneAguaFria = puntos.some(p => AGUA_FRIA.includes(p.tipo));
+    if (!tieneAguaFria) {
+      alert("❌ Error de validación:\n\nDebes colocar al menos un elemento que requiera agua fría.");
+      return;
+    }
+
+    // Advertencia si faltan elementos críticos (pero permitir continuar)
+    const tieneBajante = puntos.some(p => p.tipo === "bajante");
+    const tieneSalida = puntos.some(p => p.tipo === "salida");
+    
+    if (!tieneBajante || !tieneSalida) {
+      const elementosFaltantes = [];
+      if (!tieneBajante) elementosFaltantes.push("Bajante (desagüe)");
+      if (!tieneSalida) elementosFaltantes.push("Salida (punto de conexión)");
+      
+      const confirmar = window.confirm(
+        `⚠️ Advertencia:\n\nNo has colocado los siguientes elementos que suelen ser necesarios:\n\n${elementosFaltantes.join("\n")}\n\n¿Deseas continuar de todas formas?`
+      );
+      
+      if (!confirmar) {
+        return;
+      }
+    }
+
     const payload = prepararPayload();
-    console.log("📤 Payload hidráulico:", payload);
+    
+    // Validar el payload completo con el schema
+    const validation = validateHidraulicaPayload(payload);
+    if (!validation.success) {
+      const errorMessages = validation.errors
+        .map((err) => `• ${err.path}: ${err.message}`)
+        .join("\n");
+      alert(`❌ Error de validación:\n\n${errorMessages}`);
+      console.error("Errores de validación:", validation.errors);
+      console.error("Payload que falló:", JSON.stringify(payload, null, 2));
+      return;
+    }
+
+    // Asegurar que el payload tenga la estructura exacta esperada
+    // Verificar que niveles es un array con al menos un elemento
+    if (!Array.isArray(payload.niveles) || payload.niveles.length === 0) {
+      alert("❌ Error: El payload no tiene la estructura correcta. Debe tener al menos un nivel.");
+      console.error("Payload inválido:", payload);
+      return;
+    }
+
+    // Verificar que el primer nivel tenga todos los campos necesarios
+    const primerNivel = payload.niveles[0];
+    if (!primerNivel || !primerNivel.plano) {
+      alert("❌ Error: El primer nivel no tiene la estructura correcta.");
+      console.error("Primer nivel inválido:", primerNivel);
+      return;
+    }
+
+    
+    // Crear una copia limpia del payload para asegurar que sea serializable
+    const payloadLimpio = JSON.parse(JSON.stringify(payload));
+    
     try {
       setIsSubmitting(true);
+      
+      
+      // Forzar que niveles sea un array completo (no se convierta en objeto)
+      const payloadFinal = {
+        niveles: payloadLimpio.niveles.map(nivel => ({
+          piso: nivel.piso,
+          resane: nivel.resane,
+          plano: {
+            ancho_cm: nivel.plano.ancho_cm,
+            largo_cm: nivel.plano.largo_cm,
+            puntos: Array.isArray(nivel.plano.puntos) ? nivel.plano.puntos.map(p => ({ ...p })) : [],
+            ejes_secundarios: Array.isArray(nivel.plano.ejes_secundarios) ? nivel.plano.ejes_secundarios.map(e => ({ ...e })) : [],
+          }
+        }))
+      };
+        
       const data = await request(apiUrls.cotizacion.cotizarHidraulico, {
         method: "POST",
-        body: payload,
+        body: payloadFinal, // Usar el payload con arrays forzados
       });
-      // almacenar respuesta y parámetros utilizados
+      // almacenar respuesta y parámetros utilizados con coordenadas en cm para el PDF
+      const puntosParaPDF = payloadFinal.niveles[0]?.plano?.puntos || [];
+      const ejesParaPDF = payloadFinal.niveles[0]?.plano?.ejes_secundarios || [];
+      
       setCotizacion(data);
       setUltimoFormulario({
-        puntos,
-        ejesSecundarios,
+        puntos: puntosParaPDF,  // Puntos con coordenadas ya en cm
+        ejesSecundarios: ejesParaPDF,  // Ejes formateados
         ancho,
         largo,
         tienePiso,
         tieneResane,
-        payload,
+        payload: payloadFinal,
       });
       alert("Cotización hidráulica recibida ✅");
     } catch (error) {
