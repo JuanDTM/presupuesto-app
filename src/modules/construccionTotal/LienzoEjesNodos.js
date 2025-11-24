@@ -46,12 +46,13 @@ export default function LienzoEjesNodos({
   const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");
   const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");
 
-  // Nodos ajustados con offset
-  const nodosOffset = nodos.map(n => ({
+  /// Nodos ajustados con offset - filtrar nodos inválidos primero
+  const nodosOffset = (nodos || [])
+  .filter(n => n && typeof n.x === 'number' && typeof n.y === 'number')
+  .map(n => ({
     x: n.x + offsetX,
     y: n.y + offsetY
   }));
-
   return (
     <Stage
       width={stageWidth}

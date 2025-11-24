@@ -72,7 +72,22 @@ export default function VentanaInicio() {
         <ReformasModal visible={mostrarReformas} onClose={() => setMostrarReformas(false)} />
       )}
 
-      <ReformaTotalModal visible={mostrarConstruccion} onClose={() => setMostrarConstruccion(false)} />
+      <ReformaTotalModal 
+        visible={mostrarConstruccion} 
+        onClose={() => {
+          setMostrarConstruccion(false);
+          // Limpiar localStorage cuando se cierra completamente
+          if (mostrarConstruccion) {
+            localStorage.removeItem("ancho");
+            localStorage.removeItem("largo");
+            localStorage.removeItem("altura");
+            localStorage.removeItem("ejesSecundarios");
+            localStorage.removeItem("muros");
+            localStorage.removeItem("cotas");
+            localStorage.removeItem("orientacionesNodos");
+          }
+        }} 
+      />
     </div>
   );
 }
