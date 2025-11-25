@@ -8,6 +8,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createTechoDefaultValues, techoSchema } from "../validation/schemas";
 import CotizacionTechoPDF from "./CotizacionTechoPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 const readNumberAsString = (key, fallback) => {
   try {
@@ -734,6 +735,7 @@ export default function TechosModal({ onClose, onVolver }) {
             sistema de cubierta.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="techo-sections">

@@ -17,6 +17,14 @@
 
 .muro-modal__header {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.muro-modal__header > div {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 10px;
 }
@@ -193,6 +201,8 @@
   background: #e7eaf4;
   color: #1c264f;
   border: 1px solid rgba(207, 214, 233, 0.6);
+  width: fit-content;
+  align-self: flex-start;
 }
 
 .muro-button--ghost:hover {
@@ -261,6 +271,11 @@
   .muro-modal {
     padding: 24px 18px;
     border-radius: 20px;
+  }
+
+  .muro-modal__header {
+    flex-direction: column;
+    gap: 16px;
   }
 
   .muro-sections {

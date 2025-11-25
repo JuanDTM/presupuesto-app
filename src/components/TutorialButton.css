@@ -1,0 +1,84 @@
+.tutorial-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #1c53ff 0%, #0035b3 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(28, 83, 255, 0.25);
+  white-space: nowrap;
+}
+
+.tutorial-btn:hover {
+  background: linear-gradient(135deg, #0035b3 0%, #002a8f 100%);
+  box-shadow: 0 6px 16px rgba(28, 83, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.tutorial-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(28, 83, 255, 0.25);
+}
+
+.tutorial-btn__icon {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.tutorial-btn__text {
+  letter-spacing: 0.02em;
+}
+
+/* Variante minimalista para headers de modales */
+.tutorial-btn--minimal {
+  padding: 8px 16px;
+  background: rgba(28, 83, 255, 0.1);
+  color: #1c53ff;
+  font-size: 13px;
+  box-shadow: none;
+  border: 1px solid rgba(28, 83, 255, 0.2);
+}
+
+.tutorial-btn--minimal:hover {
+  background: #1c53ff;
+  color: white;
+  border-color: #1c53ff;
+  box-shadow: 0 4px 12px rgba(28, 83, 255, 0.2);
+}
+
+/* Variante para el inicio */
+.tutorial-btn--featured {
+  padding: 14px 28px;
+  font-size: 15px;
+  gap: 10px;
+}
+
+.tutorial-btn--featured .tutorial-btn__icon {
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .tutorial-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .tutorial-btn--featured {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+
+  .tutorial-btn--minimal {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+

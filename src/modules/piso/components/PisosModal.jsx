@@ -7,6 +7,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createPisoDefaultValues, pisoSchema } from "../validation/schemas";
 import CotizacionPisoPDF from "./CotizacionPisoPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 export default function PisosModal({ onClose, onVolver }) {
   const [cotizacion, setCotizacion] = useState(null);
@@ -222,6 +223,7 @@ export default function PisosModal({ onClose, onVolver }) {
             Completa las medidas principales y los acabados para obtener una estimación precisa.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="pisos-sections">

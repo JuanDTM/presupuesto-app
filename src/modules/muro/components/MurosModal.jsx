@@ -10,6 +10,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { pdf } from "@react-pdf/renderer";
 import CotizacionPDF from "./CotizacionPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 export default function MurosModal({ onClose, onVolver }) {
   const [muroDatos, setMuroDatos] = useState(() => createMuroDefaultValues());
@@ -323,6 +324,7 @@ export default function MurosModal({ onClose, onVolver }) {
             precisa.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="muro-sections">

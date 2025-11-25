@@ -7,6 +7,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createColumnasDefaultValues, columnasSchema } from "../validation/schemas";
 import CotizacionColumnasPDF from "./CotizacionColumnasPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 const TIPO_LADRILLO_OPCIONES = [
   { value: "1", label: "Farol 10×20×30" },
@@ -329,6 +330,7 @@ export default function ColumnasModal({ onClose, onVolver }) {
             Registra los elementos necesarios de soporte vertical para estimar la obra civil.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="columnas-sections">
