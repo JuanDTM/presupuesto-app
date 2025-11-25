@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../modules/auth/context/AuthContext';
+import LogoutButton from '../../modules/auth/components/LogoutButton';
 import ReformasModal from '../../components/ReformasModal';
 import ReformaTotalModal from '../../modules/construccionTotal/ReformaTotalModal';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,11 @@ export default function VentanaInicio() {
 
   return (
     <div className="ventana-inicio">
+      {token && (
+        <div className="logout-container">
+          <LogoutButton />
+        </div>
+      )}
       <div className="inicio-card">
         <div className="inicio-card__left">
           <div className="inicio-card__brand">
