@@ -7,8 +7,8 @@ import PublicOnlyRoute from '../modules/auth/components/PublicOnlyRoute';
 import LoginForm from '../pages/auth/login/LoginForm';
 import RegisterForm from '../pages/auth/register/RegisterForm';
 import RecoverPassword from '../pages/auth/recover/RecoverPassword';
-import LogoutButton from '../modules/auth/components/LogoutButton';
-import ComponenteEjesNodos from '../modules/construccionTotal/ComponenteEjesNodos';
+import LogoutButton from '../modules/auth/components/LogoutButton'; 
+import ProyectoConstruccion from '../modules/construccionTotal/ProyectoConstruccion';
 import VentanaInicio from '../pages/home/VentanaInicio';
 import styles from './AppRoutes.module.css';
 
@@ -40,7 +40,7 @@ export default function AppRoutes() {
                   </div>
                 </div>
               </header>
-              <ComponenteEjesNodos />
+              <ProyectoConstruccion />
             </div>
           </ProtectedRoute>
         }

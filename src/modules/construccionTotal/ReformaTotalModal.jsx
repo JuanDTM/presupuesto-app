@@ -1,8 +1,8 @@
 /* @jsxRuntime classic */
 /* @jsx React.createElement */
 import React from "react";
-import "./ReformaTotalModal.css";
-import ComponenteEjesNodos from "./ComponenteEjesNodos";
+import "./ReformaTotalModal.css"; 
+import ProyectoConstruccion from "./ProyectoConstruccion";
 
 export default function ReformaTotalModal({ visible, onClose }) {
   if (!visible) return null;
@@ -35,7 +35,7 @@ export default function ReformaTotalModal({ visible, onClose }) {
         </header>
 
         <div className="reforma-total__layout">
-          <ComponenteEjesNodos />
+          <ProyectoConstruccion />
         </div>
       </div>
     </div>
