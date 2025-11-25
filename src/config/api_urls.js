@@ -1,5 +1,5 @@
 const apiUrls = {
-  baseURL: 'http://174.129.83.62/api',
+  baseURL: 'https://reformasdelquindio.duckdns.org/api',
   auth: {
     register: '/registrar-cliente',
     login: '/login',

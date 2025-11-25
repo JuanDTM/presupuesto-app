@@ -46,12 +46,13 @@ export default function LienzoEjesNodos({
   const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");
   const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");
 
-  // Nodos ajustados con offset
-  const nodosOffset = nodos.map(n => ({
+  /// Nodos ajustados con offset - filtrar nodos inválidos primero
+  const nodosOffset = (nodos || [])
+  .filter(n => n && typeof n.x === 'number' && typeof n.y === 'number')
+  .map(n => ({
     x: n.x + offsetX,
     y: n.y + offsetY
   }));
-
   return (
     <Stage
       width={stageWidth}
@@ -179,18 +180,27 @@ export default function LienzoEjesNodos({
             color="#F57C00"
           />
           {/* Cotas de usuario */}
-          {cotas.map((c, i) => (
-            <Cota
-              key={i}
-              x1={nodosOffset[c.nodoA].x}
-              y1={nodosOffset[c.nodoA].y}
-              x2={nodosOffset[c.nodoB].x}
-              y2={nodosOffset[c.nodoB].y}
-              valor={c.valor}
-              offset={c.tipo === "libre" ? 40 :-40}
-              color={c.tipo === "libre" ? "#e53935" : "#1976d2"}
-            />
-          ))}
+          {cotas && cotas
+            .filter(c => 
+              c && 
+              nodosOffset[c.nodoA] && 
+              nodosOffset[c.nodoB] &&
+              typeof nodosOffset[c.nodoA].x === 'number' &&
+              typeof nodosOffset[c.nodoB].x === 'number'
+            )
+            .map((c, i) => (
+              <Cota
+                key={i}
+                x1={nodosOffset[c.nodoA].x}
+                y1={nodosOffset[c.nodoA].y}
+                x2={nodosOffset[c.nodoB].x}
+                y2={nodosOffset[c.nodoB].y}
+                valor={c.valor}
+                offset={c.tipo === "libre" ? 40 : -40}
+                color={c.tipo === "libre" ? "#e53935" : "#1976d2"}
+              />
+            ))
+          }
           {/* Muros */} 
           {muros && muros.map((muro, idx) => {
             if (muro.tipo === "ventana") {

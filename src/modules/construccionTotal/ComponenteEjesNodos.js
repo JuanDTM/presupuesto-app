@@ -609,13 +609,13 @@ export default function ComponenteEjesNodos() {
   const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");     // Filtrar ejes secundarios verticales
   const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");     // Filtrar ejes secundarios horizontales
 
-  // Nodos iniciales basados en los ejes principales
-  let nodos = [
-    { x: eje0.x1, y: eje0.y1 },     // Nodo superior izquierdo
-    { x: eje1.x1, y: eje1.y1 },     // Nodo superior derecho
-    { x: eje2.x1, y: eje2.y1 },     // Nodo inferior derecho
-    { x: eje3.x1, y: eje3.y1 },   // Nodo inferior izquierdo
-  ];
+  /// Nodos iniciales basados en los ejes principales
+let nodos = [
+  { x: eje0.x1, y: eje0.y1 },     // Nodo superior izquierdo
+  { x: eje1.x1, y: eje1.y1 },     // Nodo superior derecho
+  { x: eje2.x1, y: eje2.y1 },     // Nodo inferior derecho
+  { x: eje3.x1, y: eje3.y1 },   // Nodo inferior izquierdo
+];
  
   // Agregar ejes secundarios y nodos
   ejesV.forEach((ev) => {                         // Agregar nodos para ejes secundarios verticales
@@ -633,10 +633,19 @@ export default function ComponenteEjesNodos() {
     nodos.push({ x: eje0.x1, y });                // Nodo izquierdo del eje secundario
     nodos.push({ x: eje1.x1, y });                // Nodo derecho del eje secundario
   });
-  // Eliminar nodos duplicados basados en posición (x, y) para evitar superposiciones
+  // Eliminar nodos duplicados y validar que todos tengan x e y definidos
   nodos = nodos.filter(
     (n, idx, arr) =>
-      arr.findIndex(m => Math.abs(m.x - n.x) < 1 && Math.abs(m.y - n.y) < 1) === idx  // Compara con una tolerancia de 1 px para evitar duplicados por precisión de escala
+      n && 
+      typeof n.x === 'number' && 
+      typeof n.y === 'number' &&
+      arr.findIndex(m => 
+        m && 
+        typeof m.x === 'number' && 
+        typeof m.y === 'number' &&
+        Math.abs(m.x - n.x) < 1 && 
+        Math.abs(m.y - n.y) < 1
+      ) === idx
   );
 
   // Handlers para agregar ejes secundarios
@@ -942,28 +951,28 @@ export default function ComponenteEjesNodos() {
             onMouseDown={handleMouseDown}
           >
             <div className={styles.stageInner}>
-              <LienzoEjesNodos
-                ancho={ancho}
-                largo={largo}
-                nivel={nivel}
-                niveles={niveles}
-                ejesSecundarios={ejesSecundarios}
-                orientacionesNodos={orientacionesNodos}
-                escala={escala}
-                margen={margen}
-                canvasWidth={canvasWidth}
-                canvasHeight={canvasHeight}
-                stageScale={stageScale}
-                stageX={stageX}
-                stageY={stageY}
-                handleWheel={handleWheel}
-                handleMouseDown={handleMouseDown}
-                spacePressed={spacePressed}
-                isPanning={isPanning}
-                nodos={nodos}
-                cotas={cotas}
-                muros={muros}
-              />
+            <LienzoEjesNodos
+              ancho={ancho}
+              largo={largo}
+              nivel={nivel}
+              niveles={niveles}
+              ejesSecundarios={ejesSecundarios}
+              orientacionesNodos={orientacionesNodos}
+              escala={escala}
+              margen={margen}
+              canvasWidth={canvasWidth}
+              canvasHeight={canvasHeight}
+              stageScale={stageScale}
+              stageX={stageX}
+              stageY={stageY}
+              handleWheel={handleWheel}
+              handleMouseDown={handleMouseDown}
+              spacePressed={spacePressed}
+              isPanning={isPanning}
+              nodos={nodos.filter(n => n && typeof n.x === 'number' && typeof n.y === 'number')}
+              cotas={cotas}
+              muros={muros}
+            />
             </div>
           </div>
           <div className={styles.actions}>
