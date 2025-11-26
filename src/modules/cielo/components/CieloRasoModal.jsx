@@ -7,6 +7,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createCieloDefaultValues, cieloSchema } from "../validation/schemas";
 import CotizacionCieloPDF from "./CotizacionCieloPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 export default function CieloRasoModal({ onClose, onVolver }) {
   const [cotizacion, setCotizacion] = useState(null);
@@ -224,6 +225,7 @@ export default function CieloRasoModal({ onClose, onVolver }) {
             Define el tipo de sistema y las áreas a cubrir para obtener una estimación precisa.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="cielo-sections">

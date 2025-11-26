@@ -15,56 +15,64 @@ const CATEGORIES = [
     label: "Muros",
     area: "muros",
     image:
-      "https://images.pexels.com/photos/1227515/pexels-photo-1227515.jpeg",
+      "/reformas/muros.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "PISOS",
     label: "Pisos",
     area: "pisos",
     image:
-      "https://www.sioingenieria.com/portal/shared/rs.php?rsid=1993",
+      "/reformas/piso.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "CUBIERTA",
     label: "Cubierta",
     area: "cubierta",
     image:
-      "https://thumbs.dreamstime.com/b/techador-que-trabaja-en-la-estructura-de-techo-construcci%C3%B3n-el-concepto-chapa-obra-214657366.jpg",
+      "/reformas/techo.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "CIELO RASO",
     label: "Cielo raso",
     area: "cielo",
     image:
-      "https://images.pexels.com/photos/6474129/pexels-photo-6474129.jpeg",
+      "/reformas/cielo-raso.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "VIGAS",
     label: "Vigas",
     area: "vigas",
     image:
-      "https://i.ytimg.com/vi/BJmQGmZBNeM/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAyUxJaWUoaUYkfHSC5Cm7RJ0j8DQ",
+      "/reformas/viga.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "COLUMNAS",
     label: "Columnas",
     area: "columnas",
     image:
-      "https://acerostorices.com/wp-content/uploads/2023/05/albanil-haciendo-un-armado-de-columna.jpg",
+      "/reformas/columnas.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "CIMIENTOS",
     label: "Cimientos",
     area: "cimientos",
     image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgoR-ryvcl-ObNTckjhvgdlMzJ3cN--HOWPQ&s",
+      "/reformas/cimientos.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "HIRAULICAS",
     label: "Hidráulicas",
     area: "hidraulica",
     image:
-      "https://obrascivilescia.com/wp-content/uploads/2023/05/instalaciones-hidraulicas.jpg",
+      "/reformas/hidra.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
 ];
 
@@ -142,6 +150,17 @@ export default function ReformasModal({ visible, onClose }) {
                       <div className="bento-item__media">
                         <img src={category.image} alt={category.label} loading="lazy" />
                       </div>
+                      <a
+                        href={category.tutorialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bento-item__tutorial"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Ver tutorial"
+                      >
+                        <span className="tutorial-icon">▶</span>
+                        <span className="tutorial-text">Tutorial</span>
+                      </a>
                       <div className="bento-item__info">
                         <span className="bento-item__label">{category.label}</span>
                         <span className="bento-item__arrow" aria-hidden="true">

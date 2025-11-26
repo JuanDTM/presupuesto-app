@@ -1,5 +1,5 @@
 const apiUrls = {
-  baseURL: 'https://reformasdelquindio.duckdns.org/api',
+  baseURL: 'https://www.reformasycotizaciones.com',
   auth: {
     register: '/registrar-cliente',
     login: '/login',

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../modules/auth/context/AuthContext';
 import LogoutButton from '../../modules/auth/components/LogoutButton';
+import TutorialButton from '../../components/TutorialButton';
 import ReformasModal from '../../components/ReformasModal';
 import ReformaTotalModal from '../../modules/construccionTotal/ReformaTotalModal';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +55,13 @@ export default function VentanaInicio() {
               <Link to="/recuperar" className="forgot-link">
                 ¿Olvidaste tu contraseña?
               </Link>
+              <div className="inicio-card__tutorial">
+                <TutorialButton 
+                  variant="featured" 
+                  text="Mira cómo tomar medidas correctamente" 
+                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+                />
+              </div>
             </>
           ) : (
             <>
@@ -68,6 +76,13 @@ export default function VentanaInicio() {
                 <button className="app-button" onClick={() => setMostrarConstruccion(true)}>
                   Construcción total
                 </button>
+              </div>
+              <div className="inicio-card__tutorial">
+                <TutorialButton 
+                  variant="featured" 
+                  text="Mira cómo tomar medidas correctamente" 
+                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+                />
               </div>
             </>
           )}

@@ -3,11 +3,8 @@
 // ComponenteEjesNodos.js
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import LienzoEjesNodos from "./LienzoEjesNodos";
-import PanelCotas, { calcularCota } from "../../components/PanelCotas"; // Importa la función
+import PanelCotas from "../../components/PanelCotas";
 import PanelMuros from "../../components/PanelMuros";
-import CotizadorMuros from "../quote/components/CotizadorMuros";
-import CotizadorPiso from "../quote/components/CotizadorPiso";
-import CotizadorCieloRaso from "../quote/components/CotizadorCieloRaso";
 import styles from "./ComponenteEjesNodos.module.css";
 
 // Hook personalizado para localStorage
@@ -25,19 +22,20 @@ function useLocalStorage(key, defaultValue) {
   const setStoredValue = (newValue) => {
     try {
       setValue(newValue);
-      window.localStorage.setItem(key, JSON.stringify(newValue)); // Guardar datos en localStorage
+      window.localStorage.setItem(key, JSON.stringify(newValue));
     } catch (error) {
       console.warn(`Error guardando la clave "${key}" en localStorage:`, error);
     }
   };
 
   useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value)); // Sincronizar localStorage cada vez que el estado cambie
+    window.localStorage.setItem(key, JSON.stringify(value));
   }, [key, value]);
 
   return [value, setStoredValue];
 }
-//consatante niveles para definir los tamaños de los nodos
+
+// Constantes y valores por defecto
 const niveles = [
   { value: "1 de 1", ancho: 12, alto: 20 },
   { value: "1 de 2", ancho: 20, alto: 20 },
@@ -79,7 +77,6 @@ const defaultCubiertaTechos = [
 ];
 
 const defaultCubiertaEjesMuros = [];
-
 const defaultMurosCotizacion = [];
 
 const emptyTecho = { tipo: "1", alto: "", largo: "", ancho: "", teja: "" };
@@ -122,21 +119,17 @@ const emptyCubiertaMuro = {
   ventanaAncho2: "",
 };
 
-/** * Componente principal que maneja la creación de ejes y nodos,
- * así como la interacción del usuario para agregar ejes secundarios,
- * nodos y muros.
- */
 export default function ComponenteEjesNodos() {
   // Estados principales
-  const [altura, setAltura] = useLocalStorage("altura", 220); // altura de los muros por defecto 220cm, se puede ajustar según el diseño
-  const [ancho, setAncho] = useLocalStorage("ancho", 200); // ancho por defecto de diseño en 200cm, se puede ajustar según el diseño
-  const [largo, setLargo] = useLocalStorage("largo", 150);   // largo por defecto de diseño en 150cm, se puede ajustar según el diseño
-  const [nivel, setNivel] = useLocalStorage("nivel", niveles[0].value);  // nivel actual por defecto 1 de 1
-  const [ejesSecundarios, setEjesSecundarios] = useLocalStorage("ejesSecundarios", []); // Ejes secundarios iniciales vacíos, con su función de agregar y deshacer
-  const [orientacionesNodos, setOrientacionesNodos] = useLocalStorage("orientacionesNodos", {}); // Orientaciones de nodos, se inicializa vacío y se actualiza según el nivel
-  const [cotas, setCotas] = useLocalStorage("cotas", []); // Estado para cotas entre ejes, con su funcion de agregar y eliminar cotas
-  const [muros, setMuros] = useLocalStorage("muros", []); // <--- Estado para muros
-
+  const [altura, setAltura] = useLocalStorage("altura", 220);
+  const [ancho, setAncho] = useLocalStorage("ancho", 200);
+  const [largo, setLargo] = useLocalStorage("largo", 150);
+  const [nivel, setNivel] = useLocalStorage("nivel", niveles[0].value);
+  const [ejesSecundarios, setEjesSecundarios] = useLocalStorage("ejesSecundarios", []);
+  const [orientacionesNodos, setOrientacionesNodos] = useLocalStorage("orientacionesNodos", {});
+  const [cotas, setCotas] = useLocalStorage("cotas", []);
+  const [muros, setMuros] = useLocalStorage("muros", []);
+  const [obraNegra, setObraNegra] = useState(true);
   const [obraGris, setObraGris] = useLocalStorage("construccionTotal_obraGris", false);
   const [obraBlanca, setObraBlanca] = useLocalStorage("construccionTotal_obraBlanca", false);
   const [listaMateriales, setListaMateriales] = useLocalStorage("construccionTotal_listaMateriales", true);
@@ -180,6 +173,10 @@ export default function ComponenteEjesNodos() {
   const [payloadGuardado, setPayloadGuardado] = useState(null);
   const [mensajeSistema, setMensajeSistema] = useState("");
 
+  // NUEVO: Estado para inclinación cubierta
+  const [inclinacionCubierta, setInclinacionCubierta] = useState(60);
+
+  // Utilidades
   const resistencias = Array.isArray(resistenciasTerreno) ? resistenciasTerreno : [];
   const columnasDatosLista = Array.isArray(columnasDatos) ? columnasDatos : [];
   const columnasCubiertaLista = Array.isArray(columnasCubiertaDatos) ? columnasCubiertaDatos : [];
@@ -202,6 +199,7 @@ export default function ComponenteEjesNodos() {
     return parsed === null ? fallback : parsed;
   };
 
+  // Helpers para resistencias y columnas/muros (reutilizo nombres del original)
   const addResistencia = () =>
     setResistenciasTerreno([...resistencias, { profundidad: "", resistencia: "" }]);
 
@@ -286,6 +284,28 @@ export default function ComponenteEjesNodos() {
   const removeMuroCotizacion = (index) =>
     setMurosCotizacion(murosCotizacionLista.filter((_, i) => i !== index));
 
+  const importarMurosDesdePanel = () => {
+    if (!muros || muros.length === 0) {
+      setMensajeSistema("No hay muros definidos en el panel para importar.");
+      return;
+    }
+    const convertidos = muros.map((muro, index) => {
+      const cotaLibre = parseNumber(muro?.cotaLibre) ?? 0;
+      return {
+        ...emptyMuroCotizacion,
+        nombre: `Muro ${index + 1}`,
+        tipo: "muroEntero",
+        ancho_estructura: String(cotaLibre || 0),
+        ancho: String(cotaLibre || 0),
+        clase: "0",
+        estructura: "1",
+        alto: String(altura),
+      };
+    });
+    setMurosCotizacion(convertidos);
+    setMensajeSistema("Se importaron los muros del panel. Revisa y completa la información antes de cotizar.");
+  };
+
   const panelTipoToPayload = (tipo = "") => {
     switch (tipo) {
       case "entero":
@@ -303,47 +323,261 @@ export default function ComponenteEjesNodos() {
     }
   };
 
-  const importarMurosDesdePanel = () => {
-    if (!muros || muros.length === 0) {
-      setMensajeSistema("No hay muros definidos en el panel para importar.");
-      return;
-    }
-    const convertidos = muros.map((muro, index) => {
-      const cotaLibre = parseNumber(muro?.cotaLibre) ?? 0;
-      return {
-        ...emptyMuroCotizacion,
-        nombre: `Muro ${index + 1}`,
-        tipo: panelTipoToPayload(muro?.tipo),
-        ancho_estructura: String(cotaLibre || 0),
-        ancho: String(cotaLibre || 0),
-        clase: "0",
-        estructura: "1",
-        alto: String(altura),
-      };
-    });
-    setMurosCotizacion(convertidos);
-    setMensajeSistema("Se importaron los muros del panel. Revisa y completa la información antes de cotizar.");
+  // ----------------------
+  // CÁLCULOS GEOMÉTRICOS
+  // ----------------------
+
+  // escala, margen y dimensiones de canvas (UNA sola vez, no duplicadas)
+  const dimensionMaxima = Math.max(ancho, largo, 1);
+  const escalaCalculada = 780 / dimensionMaxima;
+  const escala = Number.isFinite(escalaCalculada) ? Math.min(2, Math.max(0.45, escalaCalculada)) : 2;
+  const margen = 50;
+  const canvasWidth = margen + ancho * escala + margen;
+  const canvasHeight = margen + largo * escala + margen;
+  const extraMargin = Math.max(420, Math.max(canvasWidth, canvasHeight) * 0.6);
+  const stageWidth = canvasWidth + extraMargin * 2;
+  const stageHeight = canvasHeight + extraMargin * 2;
+  const offsetX = extraMargin;
+  const offsetY = extraMargin;
+
+  const stageContainerRef = useRef(null);
+  const [viewportSize, setViewportSize] = useState({ width: 1200, height: 650 });
+  useEffect(() => {
+    const updateViewport = () => {
+      if (stageContainerRef.current) {
+        const { clientWidth, clientHeight } = stageContainerRef.current;
+        setViewportSize({
+          width: clientWidth,
+          height: clientHeight,
+        });
+      }
+    };
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+  const viewportWidth = viewportSize.width || 1200;
+  const viewportHeight = viewportSize.height || 650;
+
+  // Ejes principales en pixeles para canvas
+  const eje0 = { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen };
+  const eje1 = {
+    x1: margen + ancho * escala,
+    y1: margen,
+    x2: margen + ancho * escala,
+    y2: margen + largo * escala,
   };
+  const eje2 = {
+    x1: margen + ancho * escala,
+    y1: margen + largo * escala,
+    x2: margen,
+    y2: margen + largo * escala,
+  };
+  const eje3 = { x1: margen, y1: margen + largo * escala, x2: margen, y2: margen };
 
+  // Filtrar ejes secundarios por orientación (datos en cm)
+  const ejesV = ejesSecundarios.filter((e) => e.orientacion === "V");
+  const ejesH = ejesSecundarios.filter((e) => e.orientacion === "H");
+
+  // Nodos lógicos en centímetros (para cálculos y payload)
+  let nodosCm = [
+    { x: 0, y: 0 },
+    { x: ancho, y: 0 },
+    { x: ancho, y: largo },
+    { x: 0, y: largo },
+  ];
+
+  ejesV.forEach((ev) => {
+    const x = ev.distancia;
+    nodosCm.push({ x, y: 0 });
+    nodosCm.push({ x, y: largo });
+    ejesH.forEach((eh) => {
+      const y = eh.distancia;
+      nodosCm.push({ x, y });
+    });
+  });
+
+  ejesH.forEach((eh) => {
+    const y = eh.distancia;
+    nodosCm.push({ x: 0, y });
+    nodosCm.push({ x: ancho, y });
+  });
+
+  // Deduplicate nodosCm (tolerancia pequeña)
+  nodosCm = nodosCm.filter(
+    (n, idx, arr) =>
+      n &&
+      typeof n.x === "number" &&
+      typeof n.y === "number" &&
+      arr.findIndex(
+        (m) =>
+          m &&
+          typeof m.x === "number" &&
+          typeof m.y === "number" &&
+          Math.abs(m.x - n.x) < 0.01 &&
+          Math.abs(m.y - n.y) < 0.01
+      ) === idx
+  );
+
+  // Nodos para canvas (pixeles) mapeando nodosCm
+  const nodosCanvas = nodosCm.map((n) => ({
+    x: margen + n.x * escala,
+    y: margen + n.y * escala,
+  }));
+
+  // Función para calcular áreas resultantes por intersección de ejes
+  function calcularAreas(anchoTotal, largoTotal, ejesSec) {
+    const ejesVX = [0, ...ejesSec.filter((e) => e.orientacion === "V").map((e) => e.distancia), anchoTotal].sort(
+      (a, b) => a - b
+    );
+    const ejesHY = [0, ...ejesSec.filter((e) => e.orientacion === "H").map((e) => e.distancia), largoTotal].sort(
+      (a, b) => a - b
+    );
+    const areas = [];
+    for (let i = 0; i < ejesVX.length - 1; i++) {
+      for (let j = 0; j < ejesHY.length - 1; j++) {
+        const anchoArea = ejesVX[i + 1] - ejesVX[i];
+        const largoArea = ejesHY[j + 1] - ejesHY[j];
+        areas.push({ ancho: Number(anchoArea.toFixed(2)), largo: Number(largoArea.toFixed(2)) });
+      }
+    }
+    return areas;
+  }
+
+  const areasCalculadas = useMemo(() => calcularAreas(ancho, largo, ejesSecundarios), [ancho, largo, ejesSecundarios]);
+
+  // Determinar tipo columna según posición (cm)
+  function tipoColumnaParaNodo(nodo, anchoTotal, largoTotal) {
+    const esEsquina = (Math.abs(nodo.x - 0) < 0.01 || Math.abs(nodo.x - anchoTotal) < 0.01) &&
+                      (Math.abs(nodo.y - 0) < 0.01 || Math.abs(nodo.y - largoTotal) < 0.01);
+    if (esEsquina) return 1;
+    const esLado =
+      Math.abs(nodo.x - 0) < 0.01 ||
+      Math.abs(nodo.x - anchoTotal) < 0.01 ||
+      Math.abs(nodo.y - 0) < 0.01 ||
+      Math.abs(nodo.y - largoTotal) < 0.01;
+    if (esLado) return 2;
+    return 3;
+  }
+
+  // Generar columnas (payload) a partir de nodosCm
+  const columnasGeneradas = nodosCm.map((nodo) => ({
+    muros: 2,
+    alto: altura,
+    tipo_columna: tipoColumnaParaNodo(nodo, ancho, largo),
+  }));
+
+  // Muros de cubierta: generamos tramos entre nodos consecutivos por misma Y (horizontales)
+  function generarMurosHorizontalesDesdeNodos(nodosList, nivelPiso, alturaMuro) {
+    const murosResult = [];
+    // Agrupar por Y en nodosList (en cm)
+    const grupos = {};
+    nodosList.forEach((n) => {
+      const key = n.y.toFixed(2);
+      grupos[key] = grupos[key] || [];
+      grupos[key].push(n);
+    });
+    Object.entries(grupos).forEach(([yStr, arrN]) => {
+      const arrSorted = arrN.slice().sort((a, b) => a.x - b.x);
+      for (let i = 0; i < arrSorted.length - 1; i++) {
+        const n1 = arrSorted[i];
+        const n2 = arrSorted[i + 1];
+        const anchoEstructura = Number((n2.x - n1.x).toFixed(2));
+        if (anchoEstructura <= 0) continue;
+        murosResult.push({
+          nombre: `muro_cub_h_y${yStr}_t${i + 1}`,
+          tipo: "cuchilla",
+          ancho_estructura: anchoEstructura,
+          piso: nivelPiso,
+          ancho: anchoEstructura,
+          clase: 0,
+          estructura: 1,
+          medida1: Number((alturaMuro / 2).toFixed(2)),
+          medida2: Number((alturaMuro / 2).toFixed(2)),
+          medida3: 0,
+          alto: 0,
+          ventana: null,
+          vigaCorona: [],
+          viga: [],
+          enlace: [],
+          cinta: [],
+          columneta: [],
+          riostra: [],
+        });
+      }
+    });
+    return murosResult;
+  }
+
+  // Muros verticales (entre nodos con misma X)
+  function generarMurosVerticalesDesdeNodos(nodosList, nivelPiso, alturaMuro) {
+    const murosResult = [];
+    const grupos = {};
+    nodosList.forEach((n) => {
+      const key = n.x.toFixed(2);
+      grupos[key] = grupos[key] || [];
+      grupos[key].push(n);
+    });
+    Object.entries(grupos).forEach(([xStr, arrN]) => {
+      const arrSorted = arrN.slice().sort((a, b) => a.y - b.y);
+      for (let i = 0; i < arrSorted.length - 1; i++) {
+        const n1 = arrSorted[i];
+        const n2 = arrSorted[i + 1];
+        const anchoEstructura = Number((n2.y - n1.y).toFixed(2));
+        if (anchoEstructura <= 0) continue;
+        murosResult.push({
+          nombre: `muro_cub_v_x${xStr}_t${i + 1}`,
+          tipo: "cuchilla",
+          ancho_estructura: anchoEstructura,
+          piso: nivelPiso,
+          ancho: anchoEstructura,
+          clase: 0,
+          estructura: 1,
+          medida1: Number((alturaMuro / 2).toFixed(2)),
+          medida2: Number((alturaMuro / 2).toFixed(2)),
+          medida3: 0,
+          alto: 0,
+          ventana: null,
+          vigaCorona: [],
+          viga: [],
+          enlace: [],
+          cinta: [],
+          columneta: [],
+          riostra: [],
+        });
+      }
+    });
+    return murosResult;
+  }
+
+  const murosCubierta = useMemo(() => {
+    const nivelPiso = "4 de 4";
+    const alturaMuro = inclinacionCubierta;
+    const murosH = generarMurosHorizontalesDesdeNodos(nodosCm, nivelPiso, alturaMuro);
+    const murosV = generarMurosVerticalesDesdeNodos(nodosCm, nivelPiso, alturaMuro);
+    return [...murosH, ...murosV];
+  }, [nodosCm, inclinacionCubierta]);
+
+  // Columnas de cubierta: mismas columnas pero alto = mitad inclinación
+  const columnasCubiertaGeneradas = columnasGeneradas.map((c) => ({
+    ...c,
+    alto: Number((inclinacionCubierta / 2).toFixed(2)),
+  }));
+
+  // Payloads auxiliares similares al original
   const columnasPayload = columnasDatosLista
-    .filter(
-      (item) => item.muros !== "" || item.alto !== "" || item.tipo_columna !== ""
-    )
+    .filter((item) => item.muros !== "" || item.alto !== "" || item.tipo_columna !== "")
     .map((item) => ({
       muros: ensureNumber(item.muros),
       alto: ensureNumber(item.alto),
       tipo_columna: ensureNumber(item.tipo_columna),
     }));
 
-  const columnasCubiertaPayload = columnasCubiertaLista
-    .filter(
-      (item) => item.muros !== "" || item.alto !== "" || item.tipo_columna !== ""
-    )
-    .map((item) => ({
-      muros: ensureNumber(item.muros),
-      alto: ensureNumber(item.alto),
-      tipo_columna: ensureNumber(item.tipo_columna),
-    }));
+  const columnasCubiertaPayload = columnasCubiertaGeneradas.map((col) => ({
+    muros: col.muros,
+    alto: col.alto,
+    tipo_columna: col.tipo_columna,
+  }));
 
   const murosPayload = murosCotizacionLista
     .filter(
@@ -405,6 +639,7 @@ export default function ComponenteEjesNodos() {
       };
     });
 
+  // cubTechosPayload (transformar techosLista) y cubEjesPayload (transformar cubiertaEjesLista)
   const cubTechosPayload = techosLista
     .filter((item) => item.alto !== "" || item.largo !== "" || item.ancho !== "")
     .map((item) => {
@@ -413,7 +648,7 @@ export default function ComponenteEjesNodos() {
           ? item.ancho
               .split(",")
               .map((parte) => ensureNumber(parte.trim(), 0))
-              .filter((valor) => Number.isFinite(valor))
+              .filter((v) => Number.isFinite(v))
           : [];
       return {
         tipo: ensureNumber(item.tipo),
@@ -440,9 +675,7 @@ export default function ComponenteEjesNodos() {
               ubicacion: item.ventanaUbicacion || "centro",
               ancho: ensureNumber(item.ventanaAncho),
               alto: ensureNumber(item.ventanaAlto),
-              ...(item.ventanaAncho2 !== ""
-                ? { ancho2: ensureNumber(item.ventanaAncho2) }
-                : {}),
+              ...(item.ventanaAncho2 !== "" ? { ancho2: ensureNumber(item.ventanaAncho2) } : {}),
             }
           : null;
 
@@ -475,53 +708,78 @@ export default function ComponenteEjesNodos() {
       resistencia: ensureNumber(item.resistencia),
     }));
 
+  // Construcción del payload final (simplificado y consistente)
   const payload = useMemo(
     () => ({
+      obra_negra: {
+        resistencia_terreno: resistenciaPayload,
+        mamposteria: obraNegra,
+        columnas: true,
+        vigas: true,
+        placa: true,
+        cubierta: {
+          cuchilla: ensureNumber(cubiertaConfig?.cuchilla, 0),
+          clase: ensureNumber(cubiertaConfig?.clase, 0),
+          caballete: ensureNumber(cubiertaConfig?.caballete, 0),
+          flanche: ensureNumber(cubiertaConfig?.flanche, 0),
+          canales: canalesValores.map((v) => ensureNumber(v, 0)),
+          base: ensureNumber(cubiertaConfig?.base, 0),
+          teja: 3,
+          techos: cubTechosPayload,
+          ejes_muros: cubEjesPayload,
+          muros: murosCubierta,
+          columnas: columnasCubiertaPayload,
+        },
+      },
       obra_gris: Boolean(obraGris),
       obra_blanca: Boolean(obraBlanca),
       lista_materiales: Boolean(listaMateriales),
+      id_ladrillo: ensureNumber(idLadrillo, 1),
       ancho: ensureNumber(ancho, 0),
       largo: ensureNumber(largo, 0),
       altura: ensureNumber(altura, 0),
-      resistencia_terreno: resistenciaPayload,
-      id_ladrillo: ensureNumber(idLadrillo, 1),
       columnas: {
         especialidad: ensureNumber(columnasEspecialidad, 1),
         datos: columnasPayload,
       },
-      ejes_muros: murosPayload,
-      cubierta: {
-        cuchilla: ensureNumber(cubiertaConfig?.cuchilla, 0),
-        clase: ensureNumber(cubiertaConfig?.clase, 0),
-        caballete: ensureNumber(cubiertaConfig?.caballete, 0),
-        flanche: ensureNumber(cubiertaConfig?.flanche, 0),
-        canales: canalesValores.map((valor) => ensureNumber(valor, 0)),
-        base: ensureNumber(cubiertaConfig?.base, 0),
-        techos: cubTechosPayload,
-        ejes_muros: cubEjesPayload,
-      },
-      columnas_cubierta: {
-        especialidad: ensureNumber(columnasCubiertaEspecialidad, 1),
-        datos: columnasCubiertaPayload,
-      },
+      ejes_muros: [...murosPayload], // muros definidos por usuario
+      niveles: [
+        {
+          nivel,
+          dimensiones: {
+            ancho: ancho,
+            largo: largo,
+            altura_muros: altura,
+          },
+          columnas: {
+            especialidad: ensureNumber(columnasEspecialidad, 1),
+            datos: columnasPayload,
+          },
+          ejes_muros: [...murosPayload, ...murosCubierta], // mezcla de muros user + muros cubierta generados
+          areas_ejes: areasCalculadas,
+        },
+      ],
     }),
     [
+      obraNegra,
       obraGris,
       obraBlanca,
       listaMateriales,
+      idLadrillo,
       ancho,
       largo,
       altura,
-      resistenciaPayload,
-      idLadrillo,
       columnasEspecialidad,
       columnasPayload,
       murosPayload,
+      nivel,
+      areasCalculadas,
+      resistenciaPayload,
       cubiertaConfig,
       canalesValores,
       cubTechosPayload,
       cubEjesPayload,
-      columnasCubiertaEspecialidad,
+      murosCubierta,
       columnasCubiertaPayload,
     ]
   );
@@ -529,16 +787,15 @@ export default function ComponenteEjesNodos() {
   const payloadString = useMemo(() => JSON.stringify(payload, null, 2), [payload]);
 
   const handleGuardarCotizacion = () => {
-    const data = payload;
     try {
-      window.localStorage.setItem("construccionTotal_cotizacionPayload", JSON.stringify(data));
+      window.localStorage.setItem("construccionTotal_cotizacionPayload", JSON.stringify(payload));
       setPayloadGuardado({ timestamp: Date.now() });
       setMensajeSistema("Datos de cotización guardados en localStorage.");
     } catch (error) {
       console.error("Error guardando la cotización total:", error);
       setMensajeSistema("No se pudo guardar la cotización en localStorage.");
     }
-    console.log("Payload cotización total:", data);
+    console.log("Payload cotización total:", payload);
   };
 
   const handleCopiarPayload = async () => {
@@ -556,143 +813,34 @@ export default function ComponenteEjesNodos() {
   const [nodoMuroB, setNodoMuroB] = useState(1);
 
   // Zoom y pan
-  const [stageScale, setStageScale] = useState(1);  // zoom inicial, con función de zoom in y out, para minimizar y maximizar el canvas
-  const [stageX, setStageX] = useState(0);          // posición X del stage, con función de centrar vista
-  const [stageY, setStageY] = useState(0);          // posición Y del stage, con función de centrar vista
+  const [stageScale, setStageScale] = useState(1);
+  const [stageX, setStageX] = useState(0);
+  const [stageY, setStageY] = useState(0);
 
   // Pan con mouse y barra espaciadora
-  const [isPanning, setIsPanning] = useState(false);        // Estado para saber si se está haciendo pan
-  const [spacePressed, setSpacePressed] = useState(false);    // Estado para saber si la barra espaciadora está presionada
-  const panStart = useRef({ x: 0, y: 0 });                    // Posición inicial del mouse al iniciar el pan
-  const stageStart = useRef({ x: 0, y: 0 });                  // Posición inicial del stage al iniciar el pan
+  const [isPanning, setIsPanning] = useState(false);
+  const [spacePressed, setSpacePressed] = useState(false);
+  const panStart = useRef({ x: 0, y: 0 });
+  const stageStart = useRef({ x: 0, y: 0 });
 
-  // --- VARIABLES DE DIBUJO Y MÁRGENES ---
-  const dimensionMaxima = Math.max(ancho, largo, 1);
-  const escalaCalculada = 780 / dimensionMaxima;
-  const escala = Number.isFinite(escalaCalculada) ? Math.min(2, Math.max(0.45, escalaCalculada)) : 2;
-  const margen = 50;
-  const canvasWidth = margen + ancho * escala + margen;
-  const canvasHeight = margen + largo * escala + margen;
-  const extraMargin = Math.max(420, Math.max(canvasWidth, canvasHeight) * 0.6);
-  const stageWidth = canvasWidth + extraMargin * 2;
-  const stageHeight = canvasHeight + extraMargin * 2;
-  const offsetX = extraMargin;
-  const offsetY = extraMargin;
-  const stageContainerRef = useRef(null);
-  const [viewportSize, setViewportSize] = useState({ width: 1200, height: 650 });
-  useEffect(() => {
-    const updateViewport = () => {
-      if (stageContainerRef.current) {
-        const { clientWidth, clientHeight } = stageContainerRef.current;
-        setViewportSize({
-          width: clientWidth,
-          height: clientHeight,
-        });
-      }
-    };
-    updateViewport();
-    window.addEventListener("resize", updateViewport);
-    return () => window.removeEventListener("resize", updateViewport);
-  }, []);
-
-  const viewportWidth = viewportSize.width || 1200;
-  const viewportHeight = viewportSize.height || 650;
-
-
-  // Ejes principales
-  const eje0 = { x1: margen, y1: margen, x2: margen + ancho * escala, y2: margen };       // Eje principal superior
-  const eje1 = { x1: margen + ancho * escala, y1: margen, x2: margen + ancho * escala, y2: margen + largo * escala };      // Eje principal derecho
-  const eje2 = { x1: margen + ancho * escala, y1: margen + largo * escala, x2: margen, y2: margen + largo * escala };       // Eje principal inferior
-  const eje3 = { x1: margen, y1: margen + largo * escala, x2: margen, y2: margen };      // Eje principal izquierdo
-
-  // Filtrar ejes secundarios por orientación
-  const ejesV = ejesSecundarios.filter(e => e.orientacion === "V");     // Filtrar ejes secundarios verticales
-  const ejesH = ejesSecundarios.filter(e => e.orientacion === "H");     // Filtrar ejes secundarios horizontales
-
-  /// Nodos iniciales basados en los ejes principales
-let nodos = [
-  { x: eje0.x1, y: eje0.y1 },     // Nodo superior izquierdo
-  { x: eje1.x1, y: eje1.y1 },     // Nodo superior derecho
-  { x: eje2.x1, y: eje2.y1 },     // Nodo inferior derecho
-  { x: eje3.x1, y: eje3.y1 },   // Nodo inferior izquierdo
-];
- 
-  // Agregar ejes secundarios y nodos
-  ejesV.forEach((ev) => {                         // Agregar nodos para ejes secundarios verticales
-    const x = eje0.x1 + ev.distancia * escala;    // Calcular la posición X del eje secundario
-    nodos.push({ x, y: eje0.y1 });                // Nodo superior del eje secundario
-    nodos.push({ x, y: eje2.y1 });                // Nodo inferior del eje secundario
-    ejesH.forEach((eh) => {                       // Agregar nodos en la intersección de ejes secundarios
-      const y = eje0.y1 + eh.distancia * escala;  // Calcular la posición Y del eje secundario
-      nodos.push({ x, y });                       // Nodo de intersección
-    });
-  });
-  
-  ejesH.forEach((eh) => {                         // Agregar nodos para ejes secundarios horizontales
-    const y = eje0.y1 + eh.distancia * escala;    // Calcular la posición Y del eje secundario
-    nodos.push({ x: eje0.x1, y });                // Nodo izquierdo del eje secundario
-    nodos.push({ x: eje1.x1, y });                // Nodo derecho del eje secundario
-  });
-  // Eliminar nodos duplicados y validar que todos tengan x e y definidos
-  nodos = nodos.filter(
-    (n, idx, arr) =>
-      n && 
-      typeof n.x === 'number' && 
-      typeof n.y === 'number' &&
-      arr.findIndex(m => 
-        m && 
-        typeof m.x === 'number' && 
-        typeof m.y === 'number' &&
-        Math.abs(m.x - n.x) < 1 && 
-        Math.abs(m.y - n.y) < 1
-      ) === idx
-  );
-
-  // Handlers para agregar ejes secundarios
-  const [orientacion, setOrientacion] = useState("V");      // Orientación del eje secundario, por defecto vertical
-  const [distancia, setDistancia] = useState(0);            // Distancia del eje secundario desde el eje principal, por defecto 0
-
-  // Función para agregar un eje secundario
-  const agregarEje = () => {
-    if (
-      (orientacion === "V" && distancia > 0 && distancia < ancho) ||
-      (orientacion === "H" && distancia > 0 && distancia < largo)      //compara la distancia con el ancho o largo según la orientación
-    ) {
-      setEjesSecundarios([...ejesSecundarios, { orientacion, distancia }]);     // Agrega el nuevo eje secundario al estado
-      setDistancia(0);          // Resetea la distancia a 0 después de agregar el eje
-    }
-  };
-
-  // Función para deshacer el último eje secundario agregado
-  const deshacerEje = () => {
-    setEjesSecundarios(ejesSecundarios.slice(0, -1)); // Elimina el último eje secundario del estado
-  };
-
-  // Selector de orientación solo para 1 de 1
-  const handleOrientacionNodo = (idx, value) => {
-    setOrientacionesNodos({ ...orientacionesNodos, [idx]: value });   // Actualiza la orientación del nodo en el estado
-  };
-
-  // --- ZOOM CON LA RUEDA DEL MOUSE ---
+  // Handlers de zoom/pan
   const handleWheel = (e) => {
     e.evt.preventDefault();
-    const scaleBy = 1.1;  // Factor de zoom 
-    const oldScale = stageScale;  // Escala actual 
-    const pointer = e.target.getStage().getPointerPosition();   // Posición del puntero del mouse
+    const scaleBy = 1.1;
+    const oldScale = stageScale;
+    const pointer = e.target.getStage().getPointerPosition();
     const mousePointTo = {
-      x: (pointer.x - stageX) / oldScale,       // Punto del mouse en coordenadas del stage en X
-      y: (pointer.y - stageY) / oldScale,       // Punto del mouse en coordenadas del stage en Y
+      x: (pointer.x - stageX) / oldScale,
+      y: (pointer.y - stageY) / oldScale,
     };
-    let newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;  // Zoom in/out
-    newScale = Math.max(0.05, Math.min(10, newScale));  // Limita el zoom entre 0.05 y 10
-    // Nuevo stageX y stageY para centrar el zoom en el mouse
-    setStageScale(newScale);  // Actualiza el estado con la nueva escala
-    setStageX(pointer.x - mousePointTo.x * newScale);   // Calcula la nueva posición X
-    setStageY(pointer.y - mousePointTo.y * newScale);   // Calcula la nueva posición Y
+    let newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    newScale = Math.max(0.05, Math.min(10, newScale));
+    setStageScale(newScale);
+    setStageX(pointer.x - mousePointTo.x * newScale);
+    setStageY(pointer.y - mousePointTo.y * newScale);
   };
 
-  // Botones de zoom
-  const zoomIn = () => {    // Aumenta el zoom
+  const zoomIn = () => {
     const scaleBy = 1.1;
     let newScale = Math.min(stageScale * scaleBy, 10);
     setStageScale(newScale);
@@ -700,7 +848,7 @@ let nodos = [
     setStageY((viewportHeight - stageHeight * newScale) / 2 + offsetY * newScale);
   };
 
-  const zoomOut = () => {     // Disminuye el zoom
+  const zoomOut = () => {
     const scaleBy = 1.1;
     let newScale = Math.max(stageScale / scaleBy, 0.05);
     setStageScale(newScale);
@@ -708,86 +856,100 @@ let nodos = [
     setStageY((viewportHeight - stageHeight * newScale) / 2 + offsetY * newScale);
   };
 
-  // Botón de centrar vista
   const centrarVista = () => {
     setStageX((viewportWidth - stageWidth * stageScale) / 2 + offsetX * stageScale);
     setStageY((viewportHeight - stageHeight * stageScale) / 2 + offsetY * stageScale);
   };
 
-  // --- PAN CON CLIC Y BARRA ESPACIADORA ---
   const handleMouseDown = (event) => {
     const evt = event?.evt || event;
-    if (!spacePressed) return;    // Solo permite pan si la barra espaciadora está presionada
-    setIsPanning(true);         // Activa el modo de pan
-    panStart.current = { x: evt.clientX, y: evt.clientY };      // Guarda la posición inicial del mouse
-    stageStart.current = { x: stageX, y: stageY };          // Guarda la posición inicial del stage
+    if (!spacePressed) return;
+    setIsPanning(true);
+    panStart.current = { x: evt.clientX, y: evt.clientY };
+    stageStart.current = { x: stageX, y: stageY };
   };
 
-  // Maneja el movimiento del mouse durante el pan
   const handleMouseMove = (event) => {
-    if (!isPanning) return;     // Solo actualiza si está en modo pan
-    const dx = event.clientX - panStart.current.x;      // Diferencia en X desde el inicio
-    const dy = event.clientY - panStart.current.y;      // Diferencia en Y desde el inicio
-    setStageX(stageStart.current.x + dx);           // Actualiza la posición X del lienzo
-    setStageY(stageStart.current.y + dy);           // Actualiza la posición Y del lienzo
+    if (!isPanning) return;
+    const dx = event.clientX - panStart.current.x;
+    const dy = event.clientY - panStart.current.y;
+    setStageX(stageStart.current.x + dx);
+    setStageY(stageStart.current.y + dy);
   };
 
-  // Maneja el mouse up para salir del modo pan
   const handleMouseUp = () => {
-    setIsPanning(false);    // Desactiva el modo pan
+    setIsPanning(false);
   };
 
   const limpiarDatos = () => {
     if (window.confirm("¿Estás seguro de que quieres limpiar todos los datos?")) {
-      localStorage.removeItem("muros"); // Eliminar solo los datos de muros
-      localStorage.removeItem("ejesSecundarios"); // Eliminar solo los datos de ejes secundarios
-      setMuros([]); // Resetear el estado de muros
-      setEjesSecundarios([]); // Resetear el estado de ejes secundarios
+      localStorage.removeItem("muros");
+      localStorage.removeItem("ejesSecundarios");
+      setMuros([]);
+      setEjesSecundarios([]);
     }
   };
 
   useEffect(() => {
     console.log("Muros recuperados:", muros);
     console.log("Ejes secundarios recuperados:", ejesSecundarios);
-  }, []);
+  }, []); // eslint-disable-line
+
   // Detectar barra espaciadora
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === "Space") setSpacePressed(true);    // Activa el pan al presionar la barra espaciadora
+      if (e.code === "Space") setSpacePressed(true);
     };
     const handleKeyUp = (e) => {
-      if (e.code === "Space") setSpacePressed(false);   // Desactiva el pan al soltar la barra espaciadora
+      if (e.code === "Space") setSpacePressed(false);
     };
-    window.addEventListener("keydown", handleKeyDown);    // Escucha el evento de tecla presionada
-    window.addEventListener("keyup", handleKeyUp);        // Escucha el evento de tecla soltada
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);   // Limpia el listener al desmontar el componente
-      window.removeEventListener("keyup", handleKeyUp);     // Limpia el listener al desmontar el componente
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);             // Solo se ejecuta una vez al montar el componente
+  }, []);
 
-  // Manejar eventos de mouse para pan
   useEffect(() => {
-    if (isPanning) {      // Si está en modo pan, agrega los listeners de mouse
-      window.addEventListener("mousemove", handleMouseMove);    // Actualiza la posición del lienzo al mover el mouse
-      window.addEventListener("mouseup", handleMouseUp);        // Sale del modo pan al soltar el mouse
+    if (isPanning) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
     } else {
-      window.removeEventListener("mousemove", handleMouseMove);   // Elimina el listener de movimiento del mouse al salir del modo pan
-      window.removeEventListener("mouseup", handleMouseUp);       // Elimina el listener de mouse up al salir del modo pan
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     }
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);       // Limpia el listener de movimiento del mouse al desmontar el componente
-      window.removeEventListener("mouseup", handleMouseUp);         // Limpia el listener de mouse up al desmontar el componente
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isPanning]);    // Solo se ejecuta cuando cambia el estado de pan
+  }, [isPanning]); // eslint-disable-line
 
-  
-  // Centrar vista al cargar o cambiar tamaño/zoom
   useEffect(() => {
     centrarVista();
-    // eslint-disable-next-line
-  }, [canvasWidth, canvasHeight, stageScale, viewportWidth, viewportHeight]);
+  }, [canvasWidth, canvasHeight, stageScale, viewportWidth, viewportHeight]); // eslint-disable-line
 
+  // Estados e inputs para agregar ejes secundarios
+  const [orientacion, setOrientacion] = useState("V");
+  const [distancia, setDistancia] = useState(0);
+
+  const agregarEje = () => {
+    if (
+      (orientacion === "V" && distancia > 0 && distancia < ancho) ||
+      (orientacion === "H" && distancia > 0 && distancia < largo)
+    ) {
+      setEjesSecundarios([...ejesSecundarios, { orientacion, distancia }]);
+      setDistancia(0);
+    }
+  };
+
+  const deshacerEje = () => {
+    setEjesSecundarios(ejesSecundarios.slice(0, -1));
+  };
+
+  const handleOrientacionNodo = (idx, value) => {
+    setOrientacionesNodos({ ...orientacionesNodos, [idx]: value });
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -800,9 +962,6 @@ let nodos = [
           </p>
         </div>
         <div className={styles.headerActions}>
-          {/* <button type="button" className={`${styles.button} ${styles.buttonGhost}`} onClick={centrarVista}>
-            Centrar vista
-          </button> */}
           <button type="button" className={`${styles.button} ${styles.buttonDanger}`} onClick={limpiarDatos}>
             Limpiar datos
           </button>
@@ -847,6 +1006,22 @@ let nodos = [
                 max={350}
                 value={altura}
                 onChange={(event) => setAltura(Number(event.target.value))}
+              />
+            </div>
+            <div className={styles.field}>
+              <label htmlFor="inclinacion-cubierta">Inclinación cubierta (cm)</label>
+              <input
+                id="inclinacion-cubierta"
+                type="number"
+                min={60}
+                max={170}
+                value={inclinacionCubierta}
+                onChange={(e) => {
+                  let val = Number(e.target.value);
+                  if (val < 60) val = 60;
+                  else if (val > 170) val = 170;
+                  setInclinacionCubierta(val);
+                }}
               />
             </div>
             <div className={styles.field}>
@@ -951,28 +1126,28 @@ let nodos = [
             onMouseDown={handleMouseDown}
           >
             <div className={styles.stageInner}>
-            <LienzoEjesNodos
-              ancho={ancho}
-              largo={largo}
-              nivel={nivel}
-              niveles={niveles}
-              ejesSecundarios={ejesSecundarios}
-              orientacionesNodos={orientacionesNodos}
-              escala={escala}
-              margen={margen}
-              canvasWidth={canvasWidth}
-              canvasHeight={canvasHeight}
-              stageScale={stageScale}
-              stageX={stageX}
-              stageY={stageY}
-              handleWheel={handleWheel}
-              handleMouseDown={handleMouseDown}
-              spacePressed={spacePressed}
-              isPanning={isPanning}
-              nodos={nodos.filter(n => n && typeof n.x === 'number' && typeof n.y === 'number')}
-              cotas={cotas}
-              muros={muros}
-            />
+              <LienzoEjesNodos
+                ancho={ancho}
+                largo={largo}
+                nivel={nivel}
+                niveles={niveles}
+                ejesSecundarios={ejesSecundarios}
+                orientacionesNodos={orientacionesNodos}
+                escala={escala}
+                margen={margen}
+                canvasWidth={canvasWidth}
+                canvasHeight={canvasHeight}
+                stageScale={stageScale}
+                stageX={stageX}
+                stageY={stageY}
+                handleWheel={handleWheel}
+                handleMouseDown={handleMouseDown}
+                spacePressed={spacePressed}
+                isPanning={isPanning}
+                nodos={nodosCanvas.filter((n) => n && typeof n.x === "number" && typeof n.y === "number")}
+                cotas={cotas}
+                muros={muros}
+              />
             </div>
           </div>
           <div className={styles.actions}>
@@ -995,7 +1170,7 @@ let nodos = [
           </div>
           <div className={styles.embed}>
             <PanelCotas
-              nodos={nodos}
+              nodos={nodosCanvas}
               cotas={cotas}
               setCotas={setCotas}
               escala={escala}
@@ -1020,7 +1195,7 @@ let nodos = [
           </div>
           <div className={styles.embed}>
             <PanelMuros
-              nodos={nodos}
+              nodos={nodosCanvas}
               muros={muros}
               setMuros={setMuros}
               escala={escala}
@@ -1037,20 +1212,6 @@ let nodos = [
           </div>
         </section>
 
-        {/* <section className={`${styles.card} ${styles.cardEmbed}`}>
-          <div className={styles.cardHeader}>
-            <h3>Cotizaciones rápidas</h3>
-            <p className={styles.cardHint}>
-              Envía los datos actuales a los módulos de muros, pisos y cielo raso para obtener valores estimados.
-            </p>
-          </div>
-          <div className={styles.embedQuotes}>
-            <CotizadorMuros muros={muros} altura={altura} nivel={nivel} />
-            <CotizadorPiso largo={largo} ancho={ancho} />
-            <CotizadorCieloRaso largo={largo} ancho={ancho} />
-          </div>
-        </section> */}
-
         <section className={styles.card}>
           <div className={styles.cardHeader}>
             <h3>Parámetros generales de cotización</h3>
@@ -1059,6 +1220,14 @@ let nodos = [
             </p>
           </div>
           <div className={styles.toggleGroup}>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={obraNegra}
+                onChange={(event) => setObraNegra(event.target.checked)}
+              />
+              Cotizar obra negra
+            </label>
             <label className={styles.toggle}>
               <input
                 type="checkbox"
@@ -1171,721 +1340,6 @@ let nodos = [
           </div>
         </section>
 
-        <section className={`${styles.card} ${styles.cardTable}`}>
-          <div className={styles.cardHeader}>
-            <h3>Columnas estructurales</h3>
-            <p className={styles.cardHint}>
-              Define las columnas principales de la estructura y su relación con los muros que soportan.
-            </p>
-          </div>
-          <div className={styles.inlineGrid}>
-            <div className={styles.field}>
-              <label htmlFor="columnas-especialidad">Especialidad</label>
-              <input
-                id="columnas-especialidad"
-                type="number"
-                min={0}
-                value={columnasEspecialidad}
-                onChange={(event) => setColumnasEspecialidad(event.target.value)}
-              />
-            </div>
-          </div>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Muros que amarra</th>
-                <th>Alto (cm)</th>
-                <th>Tipo de columna</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {columnasDatosLista.map((item, index) => (
-                <tr key={`col-${index}`}>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.muros}
-                      onChange={(event) => updateColumnaDato(index, "muros", event.target.value)}
-                      className={styles.tableInput}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.alto}
-                      onChange={(event) => updateColumnaDato(index, "alto", event.target.value)}
-                      className={styles.tableInput}
-                    />
-                  </td>
-                  <td>
-                    <select
-                      value={item.tipo_columna}
-                      onChange={(event) =>
-                        updateColumnaDato(index, "tipo_columna", event.target.value)
-                      }
-                      className={styles.tableInput}
-                    >
-                      <option value="">Selecciona</option>
-                      <option value="1">Esquina (1)</option>
-                      <option value="2">Orilla (2)</option>
-                      <option value="3">Central (3)</option>
-                    </select>
-                  </td>
-                  <td className={styles.tableActions}>
-                    <button
-                      type="button"
-                      className={styles.buttonSmall}
-                      onClick={() => removeColumnaDato(index)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {columnasDatosLista.length === 0 && (
-                <tr>
-                  <td colSpan={4} className={styles.emptyRow}>
-                    No se han definido columnas. Añade al menos una fila.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={addColumnaDato}
-            >
-              Añadir columna
-            </button>
-          </div>
-        </section>
-
-        <section className={`${styles.card} ${styles.cardTable}`}>
-          <div className={styles.cardHeader}>
-            <h3>Columnas de cubierta</h3>
-            <p className={styles.cardHint}>
-              Registra las columnas utilizadas para apoyar la estructura de la cubierta.
-            </p>
-          </div>
-          <div className={styles.inlineGrid}>
-            <div className={styles.field}>
-              <label htmlFor="columnas-cubierta-especialidad">Especialidad</label>
-              <input
-                id="columnas-cubierta-especialidad"
-                type="number"
-                min={0}
-                value={columnasCubiertaEspecialidad}
-                onChange={(event) => setColumnasCubiertaEspecialidad(event.target.value)}
-              />
-            </div>
-          </div>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Muros que amarra</th>
-                <th>Alto (cm)</th>
-                <th>Tipo de columna</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {columnasCubiertaLista.map((item, index) => (
-                <tr key={`col-cub-${index}`}>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.muros}
-                      onChange={(event) =>
-                        updateColumnaCubiertaDato(index, "muros", event.target.value)
-                      }
-                      className={styles.tableInput}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      value={item.alto}
-                      onChange={(event) =>
-                        updateColumnaCubiertaDato(index, "alto", event.target.value)
-                      }
-                      className={styles.tableInput}
-                    />
-                  </td>
-                  <td>
-                    <select
-                      value={item.tipo_columna}
-                      onChange={(event) =>
-                        updateColumnaCubiertaDato(index, "tipo_columna", event.target.value)
-                      }
-                      className={styles.tableInput}
-                    >
-                      <option value="">Selecciona</option>
-                      <option value="1">Esquina (1)</option>
-                      <option value="2">Orilla (2)</option>
-                      <option value="3">Central (3)</option>
-                    </select>
-                  </td>
-                  <td className={styles.tableActions}>
-                    <button
-                      type="button"
-                      className={styles.buttonSmall}
-                      onClick={() => removeColumnaCubiertaDato(index)}
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {columnasCubiertaLista.length === 0 && (
-                <tr>
-                  <td colSpan={4} className={styles.emptyRow}>
-                    No se han definido columnas de cubierta. Añade al menos una fila.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={addColumnaCubiertaDato}
-            >
-              Añadir columna de cubierta
-            </button>
-          </div>
-        </section>
-
-        <section className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h3>Configuración de cubierta</h3>
-            <p className={styles.cardHint}>
-              Completa la información estructural de la cubierta, sus canales y los tramos de techo.
-            </p>
-          </div>
-          <div className={styles.grid}>
-            <div className={styles.field}>
-              <label htmlFor="cubierta-cuchilla">Cuchilla</label>
-              <input
-                id="cubierta-cuchilla"
-                type="number"
-                value={cubiertaConfig?.cuchilla ?? ""}
-                onChange={(event) => handleCubiertaConfigChange("cuchilla", event.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="cubierta-clase">Clase</label>
-              <input
-                id="cubierta-clase"
-                type="number"
-                value={cubiertaConfig?.clase ?? ""}
-                onChange={(event) => handleCubiertaConfigChange("clase", event.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="cubierta-caballete">Caballete</label>
-              <input
-                id="cubierta-caballete"
-                type="number"
-                value={cubiertaConfig?.caballete ?? ""}
-                onChange={(event) => handleCubiertaConfigChange("caballete", event.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="cubierta-flanche">Flanche</label>
-              <input
-                id="cubierta-flanche"
-                type="number"
-                value={cubiertaConfig?.flanche ?? ""}
-                onChange={(event) => handleCubiertaConfigChange("flanche", event.target.value)}
-              />
-            </div>
-            <div className={styles.field}>
-              <label htmlFor="cubierta-base">Base</label>
-              <input
-                id="cubierta-base"
-                type="number"
-                value={cubiertaConfig?.base ?? ""}
-                onChange={(event) => handleCubiertaConfigChange("base", event.target.value)}
-              />
-            </div>
-          </div>
-          <div className={styles.inlineGrid}>
-            {canalesValores.map((valor, index) => (
-              <div key={`canal-${index}`} className={styles.field}>
-                <label htmlFor={`cubierta-canal-${index}`}>Canal {index + 1}</label>
-                <input
-                  id={`cubierta-canal-${index}`}
-                  type="number"
-                  value={valor ?? ""}
-                  onChange={(event) => handleCubiertaCanalChange(index, event.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-          <h4 className={styles.subheading}>Segmentos de techo</h4>
-          <div className={styles.dynamicList}>
-            {techosLista.map((techo, index) => (
-              <div key={`techo-${index}`} className={styles.dynamicCard}>
-                <div className={styles.dynamicGrid}>
-                  <label className={styles.dynamicField}>
-                    <span>Tipo</span>
-                    <input
-                      type="number"
-                      value={techo.tipo}
-                      onChange={(event) => updateCubiertaTecho(index, "tipo", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Alto (cm)</span>
-                    <input
-                      type="number"
-                      value={techo.alto}
-                      onChange={(event) => updateCubiertaTecho(index, "alto", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Largo (cm)</span>
-                    <input
-                      type="number"
-                      value={techo.largo}
-                      onChange={(event) => updateCubiertaTecho(index, "largo", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho (cm) por tramo</span>
-                    <input
-                      type="text"
-                      value={techo.ancho}
-                      onChange={(event) => updateCubiertaTecho(index, "ancho", event.target.value)}
-                      placeholder="Ej: 344,356"
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Teja</span>
-                    <input
-                      type="number"
-                      value={techo.teja}
-                      onChange={(event) => updateCubiertaTecho(index, "teja", event.target.value)}
-                    />
-                  </label>
-                </div>
-                <div className={styles.listActions}>
-                  <button
-                    type="button"
-                    className={styles.buttonSmall}
-                    onClick={() => removeCubiertaTecho(index)}
-                  >
-                    Eliminar segmento
-                  </button>
-                </div>
-              </div>
-            ))}
-            {techosLista.length === 0 && (
-              <div className={styles.helper}>Añade uno o más tramos para describir la cubierta.</div>
-            )}
-          </div>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={addCubiertaTecho}
-            >
-              Añadir segmento de techo
-            </button>
-          </div>
-
-          <h4 className={styles.subheading}>Muros de cubierta</h4>
-          <div className={styles.dynamicList}>
-            {cubiertaEjesLista.map((item, index) => (
-              <div key={`cubierta-muro-${index}`} className={styles.dynamicCard}>
-                <div className={styles.dynamicGrid}>
-                  <label className={styles.dynamicField}>
-                    <span>Nombre</span>
-                    <input
-                      type="text"
-                      value={item.nombre}
-                      onChange={(event) => updateCubiertaMuro(index, "nombre", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Tipo</span>
-                    <select
-                      value={item.tipo}
-                      onChange={(event) => updateCubiertaMuro(index, "tipo", event.target.value)}
-                    >
-                      <option value="cuchilla">Cuchilla</option>
-                      <option value="muroEntero">Muro entero</option>
-                      <option value="sinMuro">Sin muro</option>
-                    </select>
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho estructura</span>
-                    <input
-                      type="number"
-                      value={item.ancho_estructura}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ancho_estructura", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Piso</span>
-                    <input
-                      type="text"
-                      value={item.piso}
-                      onChange={(event) => updateCubiertaMuro(index, "piso", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho libre</span>
-                    <input
-                      type="number"
-                      value={item.ancho}
-                      onChange={(event) => updateCubiertaMuro(index, "ancho", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Clase</span>
-                    <input
-                      type="number"
-                      value={item.clase}
-                      onChange={(event) => updateCubiertaMuro(index, "clase", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Estructura</span>
-                    <input
-                      type="number"
-                      value={item.estructura}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "estructura", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 1</span>
-                    <input
-                      type="number"
-                      value={item.medida1}
-                      onChange={(event) => updateCubiertaMuro(index, "medida1", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 2</span>
-                    <input
-                      type="number"
-                      value={item.medida2}
-                      onChange={(event) => updateCubiertaMuro(index, "medida2", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 3</span>
-                    <input
-                      type="number"
-                      value={item.medida3}
-                      onChange={(event) => updateCubiertaMuro(index, "medida3", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Alto</span>
-                    <input
-                      type="number"
-                      value={item.alto}
-                      onChange={(event) => updateCubiertaMuro(index, "alto", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Tipo de ventana</span>
-                    <input
-                      type="text"
-                      value={item.ventanaTipo}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ventanaTipo", event.target.value)
-                      }
-                      placeholder="Ej: ventana, luceta..."
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ubicación de ventana</span>
-                    <input
-                      type="text"
-                      value={item.ventanaUbicacion}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ventanaUbicacion", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAncho}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ventanaAncho", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Alto ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAlto}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ventanaAlto", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho 2 ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAncho2}
-                      onChange={(event) =>
-                        updateCubiertaMuro(index, "ventanaAncho2", event.target.value)
-                      }
-                    />
-                  </label>
-                </div>
-                <div className={styles.listActions}>
-                  <button
-                    type="button"
-                    className={styles.buttonSmall}
-                    onClick={() => removeCubiertaMuro(index)}
-                  >
-                    Eliminar muro
-                  </button>
-                </div>
-              </div>
-            ))}
-            {cubiertaEjesLista.length === 0 && (
-              <div className={styles.helper}>
-                Añade los muros de cubierta que requieran cálculo de alturas y pendientes.
-              </div>
-            )}
-          </div>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={addCubiertaMuro}
-            >
-              Añadir muro de cubierta
-            </button>
-          </div>
-        </section>
-
-        <section className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h3>Muros para la cotización total</h3>
-            <p className={styles.cardHint}>
-              Complementa la información de los muros que se enviarán a la API general. Puedes importar los muros
-              creados en el panel y enriquecerlos con los datos necesarios.
-            </p>
-          </div>
-          <div className={styles.dynamicList}>
-            {murosCotizacionLista.map((item, index) => (
-              <div key={`muro-cot-${index}`} className={styles.dynamicCard}>
-                <div className={styles.dynamicGrid}>
-                  <label className={styles.dynamicField}>
-                    <span>Nombre</span>
-                    <input
-                      type="text"
-                      value={item.nombre}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "nombre", event.target.value)
-                      }
-                      placeholder="Ej: muro eje 1 número 1"
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Tipo</span>
-                    <select
-                      value={item.tipo}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "tipo", event.target.value)
-                      }
-                    >
-                      <option value="muroEntero">Muro entero</option>
-                      <option value="muroPuerta">Muro puerta</option>
-                      <option value="muroVentana">Muro ventana</option>
-                      <option value="muroPuertaVentana">Muro puerta ventana</option>
-                      <option value="sinMuro">Sin muro</option>
-                    </select>
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho estructura</span>
-                    <input
-                      type="number"
-                      value={item.ancho_estructura}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ancho_estructura", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho libre</span>
-                    <input
-                      type="number"
-                      value={item.ancho}
-                      onChange={(event) => updateMuroCotizacion(index, "ancho", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Piso</span>
-                    <input
-                      type="text"
-                      value={item.piso}
-                      onChange={(event) => updateMuroCotizacion(index, "piso", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Clase</span>
-                    <input
-                      type="number"
-                      value={item.clase}
-                      onChange={(event) => updateMuroCotizacion(index, "clase", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Estructura</span>
-                    <input
-                      type="number"
-                      value={item.estructura}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "estructura", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 1</span>
-                    <input
-                      type="number"
-                      value={item.medida1}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "medida1", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 2</span>
-                    <input
-                      type="number"
-                      value={item.medida2}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "medida2", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Medida 3</span>
-                    <input
-                      type="number"
-                      value={item.medida3}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "medida3", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Alto</span>
-                    <input
-                      type="number"
-                      value={item.alto}
-                      onChange={(event) => updateMuroCotizacion(index, "alto", event.target.value)}
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Tipo de ventana</span>
-                    <input
-                      type="text"
-                      value={item.ventanaTipo}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ventanaTipo", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ubicación ventana</span>
-                    <input
-                      type="text"
-                      value={item.ventanaUbicacion}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ventanaUbicacion", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAncho}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ventanaAncho", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Alto ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAlto}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ventanaAlto", event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className={styles.dynamicField}>
-                    <span>Ancho 2 ventana</span>
-                    <input
-                      type="number"
-                      value={item.ventanaAncho2}
-                      onChange={(event) =>
-                        updateMuroCotizacion(index, "ventanaAncho2", event.target.value)
-                      }
-                    />
-                  </label>
-                </div>
-                <div className={styles.listActions}>
-                  <button
-                    type="button"
-                    className={styles.buttonSmall}
-                    onClick={() => removeMuroCotizacion(index)}
-                  >
-                    Eliminar muro
-                  </button>
-                </div>
-              </div>
-            ))}
-            {murosCotizacionLista.length === 0 && (
-              <div className={styles.helper}>
-                Aún no has agregado muros a la cotización total. Puedes crearlos manualmente o importar los
-                definidos en el panel.
-              </div>
-            )}
-          </div>
-          <div className={styles.actions}>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonSecondary}`}
-              onClick={addMuroCotizacion}
-            >
-              Añadir muro manualmente
-            </button>
-            <button
-              type="button"
-              className={`${styles.button} ${styles.buttonGhost}`}
-              onClick={importarMurosDesdePanel}
-              disabled={!muros || muros.length === 0}
-            >
-              Importar muros del panel
-            </button>
-          </div>
-        </section>
-
         <section className={`${styles.card} ${styles.cardSummary}`}>
           <div className={styles.cardHeader}>
             <h3>Resumen de la cotización total</h3>
@@ -1924,7 +1378,7 @@ let nodos = [
               </p>
             </div>
             <ul className={styles.orientationList}>
-              {nodos.map((_, idx) => (
+              {nodosCanvas.map((_, idx) => (
                 <li key={`orient-${idx}`}>
                   <span>Nodo {idx + 1}</span>
                   <select

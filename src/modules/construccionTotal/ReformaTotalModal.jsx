@@ -3,6 +3,7 @@
 import React from "react";
 import "./ReformaTotalModal.css";
 import ComponenteEjesNodos from "./ComponenteEjesNodos";
+import TutorialButton from "../../components/TutorialButton";
 
 export default function ReformaTotalModal({ visible, onClose }) {
   if (!visible) return null;
@@ -24,14 +25,17 @@ export default function ReformaTotalModal({ visible, onClose }) {
               <p>Diseña la retícula y exporta insumos para cotización</p>
             </div>
           </div>
-          <button
-            type="button"
-            className="reforma-total__close"
-            onClick={handleClose}
-            aria-label="Cerrar"
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <TutorialButton variant="minimal" text="Tutorial" />
+            <button
+              type="button"
+              className="reforma-total__close"
+              onClick={handleClose}
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
         </header>
 
         <div className="reforma-total__layout">

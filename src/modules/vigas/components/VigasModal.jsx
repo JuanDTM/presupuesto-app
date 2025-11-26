@@ -7,6 +7,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createVigasDefaultValues, vigasSchema } from "../validation/schemas";
 import CotizacionVigasPDF from "./CotizacionVigasPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 const TIPO_VIGA_OPCIONES = [
   { value: "1", label: "Viga corona delgada" },
@@ -221,6 +222,7 @@ export default function VigasModal({ onClose, onVolver }) {
             mano de obra y materiales.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="vigas-sections">

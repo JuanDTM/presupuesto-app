@@ -16,6 +16,7 @@ import apiUrls from "../../../config/api_urls";
 import CotizacionHidraulicaPDF from "./CotizacionHidraulicaPDF";
 import { validateHidraulicaPayload } from "../validation/shemas";
 import "./HidraulicaModal.css";
+import TutorialButton from "../../../components/TutorialButton";
 
 /**
  * HidraulicaModal.jsx
@@ -647,6 +648,7 @@ export default function HidraulicaModal({ onVolver = () => {}, onClose = () => {
             Define las dimensiones y coloca elementos hidráulicos en el plano para obtener la estimación del sistema.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="hidraulica-sections">

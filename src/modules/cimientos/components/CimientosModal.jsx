@@ -7,6 +7,7 @@ import { request } from "../../../lib/httpClient";
 import apiUrls from "../../../config/api_urls";
 import { createCimientosDefaultValues, cimientosSchema } from "../validation/schemas";
 import CotizacionCimientosPDF from "./CotizacionCimientosPDF";
+import TutorialButton from "../../../components/TutorialButton";
 
 const TIPO_COLUMNA_OPCIONES = [
   { value: "1", label: "Columna de esquina" },
@@ -202,6 +203,7 @@ export default function CimientosModal({ onClose, onVolver }) {
             diseño de cimientos.
           </p>
         </div>
+        <TutorialButton variant="minimal" text="Tutorial" />
       </header>
 
       <div className="cimientos-sections">
