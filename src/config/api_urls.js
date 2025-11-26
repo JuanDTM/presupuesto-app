@@ -1,5 +1,5 @@
 const apiUrls = {
-  baseURL: 'https://www.reformasycotizaciones.com',
+  baseURL: 'https://www.reformasycotizaciones.com/api',
   auth: {
     register: '/registrar-cliente',
     login: '/login',
