@@ -15,7 +15,7 @@ const CATEGORIES = [
     label: "Muros",
     area: "muros",
     image:
-      "https://juandtm.github.io/reformas/muros.webp",
+      "https://juandtm.github.io/presupuesto-app/reformas/muros.webp",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -23,7 +23,7 @@ const CATEGORIES = [
     label: "Pisos",
     area: "pisos",
     image:
-      "https://juandtm.github.io/reformas/piso.jpg",
+      "https://juandtm.github.io/presupuesto-app/reformas/piso.jpg",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -31,7 +31,7 @@ const CATEGORIES = [
     label: "Cubierta",
     area: "cubierta",
     image:
-      "https://juandtm.github.io/reformas/techo.jpg",
+      "https://juandtm.github.io/presupuesto-app/reformas/techo.jpg",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -39,7 +39,7 @@ const CATEGORIES = [
     label: "Cielo raso",
     area: "cielo",
     image:
-      "https://juandtm.github.io/reformas/cielo-raso.webp",
+      "https://juandtm.github.io/presupuesto-app/reformas/cielo-raso.webp",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -47,7 +47,7 @@ const CATEGORIES = [
     label: "Vigas",
     area: "vigas",
     image:
-      "https://juandtm.github.io/reformas/viga.webp",
+      "https://juandtm.github.io/presupuesto-app/reformas/viga.webp",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -55,7 +55,7 @@ const CATEGORIES = [
     label: "Columnas",
     area: "columnas",
     image:
-      "https://juandtm.github.io/reformas/columnas.webp",
+      "https://juandtm.github.io/presupuesto-app/reformas/columnas.webp",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -63,7 +63,7 @@ const CATEGORIES = [
     label: "Cimientos",
     area: "cimientos",
     image:
-      "https://juandtm.github.io/reformas/cimientos.webp",
+      "https://juandtm.github.io/presupuesto-app/reformas/cimientos.webp",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
@@ -71,7 +71,7 @@ const CATEGORIES = [
     label: "Hidráulicas",
     area: "hidraulica",
     image:
-      "https://juandtm.github.io/reformas/hidra.jpg",
+      "https://juandtm.github.io/presupuesto-app/reformas/hidra.jpg",
     tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
 ];

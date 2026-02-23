@@ -30,17 +30,17 @@ import TutorialButton from "../../../components/TutorialButton";
 
 /* Rutas de iconos (ajusta según tu estructura pública) */
 const ICONS_PATHS = {
-  inodoro: "/imagenes-proyecto/inodoro.png",
-  recamara: "/imagenes-proyecto/recamara.png",
-  ducha: "/imagenes-proyecto/ducha.png",
-  calentador: "/imagenes-proyecto/calentador.png",
-  lavadero: "/imagenes-proyecto/lavadero.png",
-  lavaplatos: "/imagenes-proyecto/lavaplatos.png",
-  lavadora: "/imagenes-proyecto/lavadora.png",
-  lavamanos: "/imagenes-proyecto/lavamanos.png",
-  bajante: "/imagenes-proyecto/bajante.png",
-  salida: "/imagenes-proyecto/salida.png",
-  sifon: "/imagenes-proyecto/sifon.png",
+  inodoro: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/inodoro.png",
+  recamara: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/recamara.png",
+  ducha: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/ducha.png", 
+  calentador: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/calentador.png",
+  lavadero: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/lavadero.png",
+  lavaplatos: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/lavaplatos.png",
+  lavadora: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/lavadora.png",
+  lavamanos: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/lavamanos.png",
+  bajante: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/bajante.png",
+  salida: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/salida.png",
+  sifon: "https://juandtm.github.io/presupuesto-app/imagenes-proyecto/sifon.png",
 };
 
 /* Tamaños en cm (usa para cálculo visual y conversión) */
