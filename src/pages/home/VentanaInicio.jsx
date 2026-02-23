@@ -27,7 +27,7 @@ export default function VentanaInicio() {
             <span className="inicio-card__logo">COTIZACIÓN CON ESQUEMAS DE MEDIDAS</span>
           </div>
           <p className="inicio-card__copy">
-            Transformando ideas en realidad. Cotiza, diseña y gestiona tus proyectos de
+            Transformando ideas en realidad. Diseña, cotiza y gestiona tus proyectos de
             construcción.
           </p>
           <div className="inicio-card__blueprint" />
@@ -59,7 +59,7 @@ export default function VentanaInicio() {
                 <TutorialButton 
                   variant="featured" 
                   text="Mira cómo tomar medidas correctamente" 
-                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+                  url="https://www.youtube.com/watch?v=urG1edsKSKw" 
                 />
               </div>
             </>
@@ -81,7 +81,7 @@ export default function VentanaInicio() {
                 <TutorialButton 
                   variant="featured" 
                   text="Mira cómo tomar medidas correctamente" 
-                  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
+                  url="https://www.youtube.com/watch?v=urG1edsKSKw" 
                 />
               </div>
             </>

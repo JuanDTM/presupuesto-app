@@ -15,64 +15,64 @@ const CATEGORIES = [
     label: "Muros",
     area: "muros",
     image:
-      "/reformas/muros.webp",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/muros.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "PISOS",
     label: "Pisos",
     area: "pisos",
     image:
-      "/reformas/piso.jpg",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/piso.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "CUBIERTA",
     label: "Cubierta",
     area: "cubierta",
     image:
-      "/reformas/techo.jpg",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/techo.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "CIELO RASO",
     label: "Cielo raso",
     area: "cielo",
     image:
-      "/reformas/cielo-raso.webp",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/cielo-raso.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "VIGAS",
     label: "Vigas",
     area: "vigas",
     image:
-      "/reformas/viga.webp",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/viga.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "COLUMNAS",
     label: "Columnas",
     area: "columnas",
     image:
-      "/reformas/columnas.webp",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/columnas.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "CIMIENTOS",
     label: "Cimientos",
     area: "cimientos",
     image:
-      "/reformas/cimientos.webp",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/cimientos.webp",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
   {
     id: "HIRAULICAS",
     label: "Hidráulicas",
     area: "hidraulica",
     image:
-      "/reformas/hidra.jpg",
-    tutorialUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://juandtm.github.io/reformas/hidra.jpg",
+    tutorialUrl: "https://www.youtube.com/watch?v=urG1edsKSKw",
   },
 ];
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import './TutorialButton.css';
 
-export default function TutorialButton({ url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ", text = "Ver tutorial", variant = "default" }) {
+export default function TutorialButton({ url = "https://www.youtube.com/watch?v=urG1edsKSKw", text = "Ver tutorial", variant = "default" }) {
   return (
     <a
       href={url}
