@@ -1,0 +1,179 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.modelLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #2f4058;
+  font-size: 14px;
+}
+
+.select,
+.input {
+  border: 1px solid #b7cae6;
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #fff;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #d4e0f1;
+  background: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 860px;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #edf2fb;
+  text-align: left;
+  font-size: 13px;
+  color: #304157;
+}
+
+.table th {
+  background: #f3f7ff;
+  color: #1b4f95;
+  font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  color: #5d708d;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pages {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton,
+.pageButton {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.primaryButton {
+  background: #1861b6;
+  color: #fff;
+}
+
+.secondaryButton {
+  background: #dfeaf9;
+  color: #0f3c7a;
+}
+
+.pageButton {
+  background: #edf4ff;
+  color: #0f3c7a;
+}
+
+.pageButtonActive {
+  background: #1d5faf;
+  color: #fff;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.pageButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.editCard {
+  border: 1px solid #cad9ef;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.createCard {
+  border: 1px solid #cad9ef;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editTitle {
+  margin: 0;
+  color: #154e98;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.formGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #2f4058;
+  font-size: 13px;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.error {
+  margin: 0;
+  color: #b3261e;
+}
+
+.hint {
+  margin: 0;
+  color: #5d708d;
+  font-size: 13px;
+}
+
+.requiredMark {
+  margin-left: 4px;
+  color: #b3261e;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}

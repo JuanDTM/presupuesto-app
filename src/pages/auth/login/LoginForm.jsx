@@ -21,10 +21,18 @@ export default function LoginForm({ onSuccess }) {
   });
 
   const onSubmit = async (values) => {
-    const ok = await login(values.email, values.password);
-    if (ok) {
+    const result = await login(values.email, values.password);
+    if (result.ok) {
       toast.success('Bienvenido');
-      navigate('/');
+      const userRole = Number(result.user?.id_rol);
+
+      if (userRole === 1) {
+        navigate('/administrador');
+      } else if (userRole === 3) {
+        navigate('/panel');
+      } else {
+        navigate('/');
+      }
     } else {
       toast.error('Credenciales inválidas');
     }

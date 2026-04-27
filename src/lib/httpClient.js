@@ -1,13 +1,32 @@
 import apiUrls from '../config/api_urls';
 
 const API_URL = apiUrls.baseURL;
+let authTokenCache = null;
+
+try {
+  authTokenCache = sessionStorage.getItem('token');
+} catch {
+  authTokenCache = null;
+}
 
 function getTokenFromSessionStorage() {
+  if (authTokenCache) return authTokenCache;
+
   try {
-    return sessionStorage.getItem('token');
+    authTokenCache = sessionStorage.getItem('token');
+    return authTokenCache;
   } catch {
     return null;
   }
+}
+
+export function setAuthToken(token) {
+  authTokenCache = token || null;
+
+  try {
+    if (token) sessionStorage.setItem('token', token);
+    else sessionStorage.removeItem('token');
+  } catch {}
 }
 
 export async function request(path, { method = 'GET', body, auth = false } = {}) {

@@ -17,6 +17,19 @@ const apiUrls = {
     cotizarVigas: '/cotizacion-vigas',
     cotizarColumnas: '/cotizacion-columnas',
     cotizarHidraulico: '/cotizacion-hidraulico'
+  },
+  admin: {
+    clientes: '/admin/clientes',
+    modelosManoObra: '/admin/modelos-mano-obra',
+    datosModeloManoObra: '/admin/datos-modelo-mano-obra',
+    modificarModeloManoObra: '/admin/modificar-modelo-mano-obra',
+    crearModeloManoObra: '/admin/crear-modelo-mano-obra',
+    modelosMaterial: '/admin/modelos-material',
+    datosModeloMaterial: '/admin/datos-modelo-material',
+    modificarModeloMaterial: '/admin/modificar-modelo-material',
+    crearModeloMaterial: '/admin/crear-modelo-material',
+    incrementarPorcentajeManoObra: '/admin/incrementar-porcentaje-mano-obra',
+    decrementarPorcentajeManoObra: '/admin/decrementar-porcentaje-mano-obra'
   }
 };
 

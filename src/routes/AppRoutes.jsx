@@ -10,6 +10,7 @@ import RecoverPassword from '../pages/auth/recover/RecoverPassword';
 import LogoutButton from '../modules/auth/components/LogoutButton';
 import ComponenteEjesNodos from '../modules/construccionTotal/ComponenteEjesNodos';
 import VentanaInicio from '../pages/home/VentanaInicio';
+import Administrador from '../pages/admin/Administrador';
 import styles from './AppRoutes.module.css';
 
 export default function AppRoutes() {
@@ -25,9 +26,18 @@ export default function AppRoutes() {
 
       {/* Rutas protegidas: solo usuarios autenticados */}
       <Route
+        path="/administrador"
+        element={
+          <ProtectedRoute allowedRoles={[1]}>
+            <Administrador />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/panel"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={[3]}>
             <div className={styles.mainLayout}>
               <header className={styles.header}>
                 <div className={styles.headerContent}>

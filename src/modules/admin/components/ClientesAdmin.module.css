@@ -1,0 +1,188 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 240px;
+  border: 1px solid #b7cae6;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.pageSizeLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2f4058;
+  font-size: 14px;
+}
+
+.select {
+  border: 1px solid #b7cae6;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #d4e0f1;
+  background: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  border-bottom: 1px solid #edf2fb;
+  text-align: left;
+  font-size: 13px;
+  color: #304157;
+}
+
+.table th {
+  background: #f3f7ff;
+  color: #1b4f95;
+  font-weight: 700;
+}
+
+.empty {
+  text-align: center;
+  color: #5d708d;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton,
+.pageButton {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.primaryButton {
+  background: #1861b6;
+  color: #fff;
+}
+
+.secondaryButton {
+  background: #dfeaf9;
+  color: #0f3c7a;
+}
+
+.dangerButton {
+  background: #ffe5e7;
+  color: #b3261e;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.dangerButton:disabled,
+.pageButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.total {
+  color: #2f4058;
+  font-size: 14px;
+}
+
+.pages {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pageButton {
+  background: #edf4ff;
+  color: #0f3c7a;
+}
+
+.pageButtonActive {
+  background: #1d5faf;
+  color: #fff;
+}
+
+.editCard {
+  border: 1px solid #cad9ef;
+  border-radius: 12px;
+  background: #f8fbff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editTitle {
+  margin: 0;
+  color: #154e98;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.formGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #2f4058;
+  font-size: 13px;
+}
+
+.formGrid input,
+.formGrid select {
+  border: 1px solid #b7cae6;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.error {
+  margin: 0;
+  color: #b3261e;
+}
+
+@media (max-width: 900px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
