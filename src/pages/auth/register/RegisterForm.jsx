@@ -42,7 +42,7 @@ export default function RegisterForm({ onSuccess }) {
     const ok = await doRegister(payload);
     if (ok) {
       toast.success('Registro exitoso');
-      navigate('/panel');
+      navigate('/');
     } else {
       toast.error('No se pudo registrar');
     }

@@ -28,7 +28,7 @@ export default function LoginForm({ onSuccess }) {
 
       if (userRole === 1) {
         navigate('/administrador');
-      } else if (userRole === 3) {
+      } else if (userRole === 2) {
         navigate('/panel');
       } else {
         navigate('/');

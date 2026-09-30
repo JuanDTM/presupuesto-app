@@ -1,6 +1,6 @@
 const apiUrls = {
   //http://174.129.83.62  https://www.reformasycotizaciones.com/api
-  baseURL: 'https://www.reformasycotizaciones.com/api',
+  baseURL: 'http://127.0.0.1:8000/api',
   auth: {
     register: '/registrar-cliente',
     login: '/login',

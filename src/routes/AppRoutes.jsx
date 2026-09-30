@@ -37,7 +37,7 @@ export default function AppRoutes() {
       <Route
         path="/panel"
         element={
-          <ProtectedRoute allowedRoles={[3]}>
+          <ProtectedRoute allowedRoles={[2]}>
             <div className={styles.mainLayout}>
               <header className={styles.header}>
                 <div className={styles.headerContent}>
